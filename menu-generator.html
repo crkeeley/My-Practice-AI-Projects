@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seasonal Menu Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Cinzel:wght@400;500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep:   #162d21;
+      --green:        #1e3a2f;
+      --green-mid:    #2d5442;
+      --green-soft:   #3d6b54;
+      --gold:         #c9a84c;
+      --gold-light:   #dfc073;
+      --gold-pale:    #f0dfa0;
+      --cream:        #faf7f2;
+      --cream-mid:    #f0ebe0;
+      --cream-dark:   #e4dcc8;
+      --text:         #1c1c1a;
+      --text-mid:     #3d3d38;
+      --text-muted:   #6a6558;
+      --border:       #d4c9b0;
+      --border-light: #e8e0d0;
+      --white:        #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── APP HEADER ───────────────────────────────────── */
+    .app-header {
+      background: var(--green);
+      padding: 36px 24px 30px;
+      text-align: center;
+      border-bottom: 2px solid var(--gold);
+    }
+    .app-header .eyebrow {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+    .app-header h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--cream);
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .app-header .tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--cream-dark);
+      opacity: 0.85;
+    }
+
+    /* ── FORM PAGE ────────────────────────────────────── */
+    .form-wrap {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .api-key-box {
+      background: var(--cream-mid);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 32px;
+    }
+    .api-key-box label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-mid);
+      margin-bottom: 8px;
+    }
+
+    .field { margin-bottom: 26px; }
+    .field > label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-mid);
+      margin-bottom: 8px;
+    }
+    .field .hint {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    textarea, input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 11px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      color: var(--text);
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+    textarea:focus, input:focus { border-color: var(--green-mid); }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 26px;
+    }
+    @media (max-width: 540px) { .form-row { grid-template-columns: 1fr; } }
+
+    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-opt {
+      padding: 8px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-mid);
+      background: var(--white);
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-opt:hover { border-color: var(--green-soft); color: var(--green); }
+    .btn-opt.active { background: var(--green); border-color: var(--green); color: var(--cream); }
+
+    .gen-btn {
+      width: 100%;
+      padding: 15px;
+      font-family: 'Cinzel', serif;
+      font-size: 0.92rem;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      color: var(--green-deep);
+      background: var(--gold);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.18s;
+      margin-top: 8px;
+      position: relative;
+    }
+    .gen-btn:hover:not(:disabled) { background: var(--gold-light); }
+    .gen-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .gen-btn.spin-state { color: transparent; }
+    .gen-btn.spin-state::after {
+      content: '';
+      position: absolute; width: 20px; height: 20px;
+      border: 2px solid rgba(22,45,33,0.25);
+      border-top-color: var(--green-deep);
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      animation: spin 0.75s linear infinite;
+    }
+
+    .err-msg {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
+      padding: 11px 15px;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+
+    /* ── MENU PAGE ────────────────────────────────────── */
+    .menu-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    .menu-toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .tool-btn {
+      padding: 8px 18px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1.5px solid;
+    }
+    .tool-btn.sec {
+      background: var(--white);
+      border-color: var(--border);
+      color: var(--text-mid);
+    }
+    .tool-btn.sec:hover { border-color: var(--green-mid); color: var(--green); }
+    .tool-btn.pri {
+      background: var(--green);
+      border-color: var(--green);
+      color: var(--cream);
+    }
+    .tool-btn.pri:hover { background: var(--green-mid); }
+    .tool-btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+    /* ── MENU CARD ────────────────────────────────────── */
+    .menu-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      box-shadow: 0 6px 32px rgba(22,45,33,0.10);
+      padding: 56px 64px;
+      position: relative;
+    }
+    @media (max-width: 640px) { .menu-card { padding: 32px 20px; } }
+
+    /* Corner ornaments */
+    .menu-card::before,
+    .menu-card::after {
+      content: '◆';
+      position: absolute;
+      color: var(--gold);
+      font-size: 0.65rem;
+      opacity: 0.45;
+    }
+    .menu-card::before { top: 18px; left: 22px; }
+    .menu-card::after  { bottom: 18px; right: 22px; }
+
+    .menu-hd {
+      text-align: center;
+      padding-bottom: 36px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .menu-hd .season-tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+    .menu-hd h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 400;
+      color: var(--green);
+      letter-spacing: 0.06em;
+      margin-bottom: 14px;
+    }
+    .menu-hd .season-note {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .orn-divider {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 36px 0 20px;
+    }
+    .orn-divider::before,
+    .orn-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+    .orn-divider span {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.28em;
+      color: var(--green);
+      white-space: nowrap;
+    }
+
+    .dish-entry {
+      padding: 22px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .dish-entry:last-of-type { border-bottom: none; }
+
+    .dish-line1 {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 16px;
+      margin-bottom: 3px;
+    }
+    .dish-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--text);
+      flex: 1;
+    }
+    .dish-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--green);
+      white-space: nowrap;
+    }
+    .dish-ings {
+      font-size: 0.69rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 9px;
+      line-height: 1.4;
+    }
+    .dish-desc {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-mid);
+      margin-bottom: 12px;
+    }
+
+    .recipe-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 13px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: var(--green-mid);
+      background: transparent;
+      border: 1px solid var(--green-mid);
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.14s;
+    }
+    .recipe-btn:hover { background: var(--green); color: var(--cream); border-color: var(--green); }
+    .recipe-btn.loading { opacity: 0.55; pointer-events: none; }
+
+    .menu-footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-light);
+    }
+    .menu-footer p {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    /* ── RECIPE MODAL ─────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(14,26,19,0.72);
+      z-index: 200;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 20px 16px;
+      overflow-y: auto;
+      backdrop-filter: blur(3px);
+    }
+    .modal-card {
+      background: var(--white);
+      max-width: 660px;
+      width: 100%;
+      margin: 20px auto;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.28);
+      overflow: hidden;
+    }
+    .modal-hd {
+      background: var(--green);
+      padding: 22px 28px 22px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .modal-hd .modal-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      font-weight: 400;
+      color: var(--cream);
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+    }
+    .modal-hd .modal-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.92rem;
+      color: var(--cream-dark);
+      opacity: 0.75;
+      margin-top: 4px;
+    }
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: var(--cream);
+      opacity: 0.65;
+      cursor: pointer;
+      padding: 2px;
+      flex-shrink: 0;
+      transition: opacity 0.14s;
+    }
+    .modal-close-btn:hover { opacity: 1; }
+
+    .modal-body { padding: 28px 32px; }
+    @media (max-width: 500px) { .modal-body { padding: 20px; } }
+
+    .modal-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 32px;
+      gap: 14px;
+    }
+    .modal-loading .ring {
+      width: 38px; height: 38px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .modal-loading p {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--text-muted);
+    }
+
+    .r-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 26px;
+    }
+    .r-chip {
+      padding: 4px 13px;
+      font-size: 0.73rem;
+      font-weight: 500;
+      background: var(--cream-mid);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text-mid);
+    }
+    .r-chip.diff-easy     { background: #f0fdf4; border-color: #86efac; color: #166534; }
+    .r-chip.diff-medium   { background: #fefce8; border-color: #fde047; color: #854d0e; }
+    .r-chip.diff-advanced { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+
+    .r-sec { margin-bottom: 24px; }
+    .r-sec h4 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .r-sec ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .r-sec ul li {
+      display: flex;
+      gap: 10px;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: var(--text-mid);
+    }
+    .r-sec ul li::before { content: '–'; color: var(--gold); flex-shrink: 0; }
+
+    .r-sec ol {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      counter-reset: step-counter;
+    }
+    .r-sec ol li {
+      display: flex;
+      gap: 14px;
+      font-size: 0.875rem;
+      line-height: 1.65;
+      color: var(--text-mid);
+      counter-increment: step-counter;
+    }
+    .r-sec ol li::before {
+      content: counter(step-counter);
+      min-width: 24px; height: 24px;
+      background: var(--green);
+      color: var(--cream);
+      border-radius: 50%;
+      font-size: 0.68rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .r-note {
+      background: var(--cream-mid);
+      border-left: 3px solid var(--gold);
+      padding: 13px 16px;
+      margin-bottom: 12px;
+      border-radius: 0 4px 4px 0;
+    }
+    .r-note .note-tag {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 5px;
+    }
+    .r-note p {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      line-height: 1.65;
+      color: var(--text-mid);
+    }
+
+    .modal-foot {
+      padding: 18px 32px;
+      background: var(--cream-mid);
+      border-top: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .copy-btn {
+      padding: 8px 18px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      background: var(--green);
+      color: var(--cream);
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.14s;
+    }
+    .copy-btn:hover { background: var(--green-mid); }
+    .close-foot {
+      padding: 8px 18px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      background: var(--white);
+      color: var(--text-mid);
+      border: 1.5px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.14s;
+    }
+    .close-foot:hover { border-color: var(--green-mid); color: var(--green); }
+    .copied-msg {
+      font-size: 0.8rem;
+      color: var(--green-mid);
+      font-weight: 500;
+      margin-left: 4px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .copied-msg.show { opacity: 1; }
+
+    /* ── ANIMATIONS ───────────────────────────────────── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.4s ease both; }
+  </style>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="eyebrow">AI-Powered</div>
+    <h1>Seasonal Menu Generator</h1>
+    <p class="tagline">From ingredients to inspiration — menus that honour the season</p>
+  </header>
+
+  <!-- ── FORM PAGE ──────────────────────────────────── -->
+  <div id="form-page" class="form-wrap">
+
+    <div class="api-key-box">
+      <label>Anthropic API Key</label>
+      <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off">
+    </div>
+
+    <div class="field">
+      <label>Available Ingredients</label>
+      <textarea id="ingredients" placeholder="List your available ingredients, e.g.:&#10;Spring peas, asparagus, morel mushrooms, ramps, lamb shoulder, halibut, aged goat cheese, Meyer lemons, wild garlic, pea shoots, radishes, fresh herbs..."></textarea>
+      <div class="hint">Claude will build dishes around what you have. Be descriptive — heirloom, aged, wild-foraged all shape the menu.</div>
+    </div>
+
+    <div class="form-row">
+      <div class="field" style="margin-bottom:0">
+        <label>Cuisine Style</label>
+        <input type="text" id="cuisine" placeholder="e.g. French Bistro, Farm-to-Table, Japanese...">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Season</label>
+        <div class="btn-group" id="grp-season">
+          <button class="btn-opt" data-v="Spring"  onclick="pick('season','Spring',this)">Spring</button>
+          <button class="btn-opt" data-v="Summer"  onclick="pick('season','Summer',this)">Summer</button>
+          <button class="btn-opt" data-v="Autumn"  onclick="pick('season','Autumn',this)">Autumn</button>
+          <button class="btn-opt" data-v="Winter"  onclick="pick('season','Winter',this)">Winter</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row" style="margin-top:24px">
+      <div class="field" style="margin-bottom:0">
+        <label>Restaurant Type</label>
+        <div class="btn-group" id="grp-type">
+          <button class="btn-opt" data-v="Fine Dining" onclick="pick('type','Fine Dining',this)">Fine Dining</button>
+          <button class="btn-opt" data-v="Casual"      onclick="pick('type','Casual',this)">Casual</button>
+          <button class="btn-opt" data-v="Café"        onclick="pick('type','Café',this)">Café</button>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Price Tier</label>
+        <div class="btn-group" id="grp-tier">
+          <button class="btn-opt" data-v="Budget"    onclick="pick('tier','Budget',this)">Budget</button>
+          <button class="btn-opt" data-v="Mid-range" onclick="pick('tier','Mid-range',this)">Mid-range</button>
+          <button class="btn-opt" data-v="Upscale"   onclick="pick('tier','Upscale',this)">Upscale</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="form-err" style="margin-top:20px"></div>
+    <button class="gen-btn" id="gen-btn" onclick="generateMenu(false)" style="margin-top:32px">
+      ◆ &ensp; Generate Seasonal Menu
+    </button>
+
+  </div>
+
+  <!-- ── MENU PAGE ──────────────────────────────────── -->
+  <div id="menu-page" style="display:none">
+    <div class="menu-wrap">
+      <div class="menu-toolbar">
+        <button class="tool-btn sec" onclick="backToForm()">← Edit Inputs</button>
+        <button class="tool-btn pri" id="regen-btn" onclick="generateMenu(true)">Regenerate Menu</button>
+      </div>
+      <div class="menu-card fade-up" id="menu-card">
+        <!-- rendered by renderMenu() -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ── RECIPE MODAL ───────────────────────────────── -->
+  <div id="modal" class="modal-overlay" style="display:none" onclick="overlayClick(event)">
+    <div class="modal-card" id="modal-card">
+      <div class="modal-hd">
+        <div>
+          <div class="modal-title" id="modal-dish-name">Recipe</div>
+          <div class="modal-subtitle" id="modal-dish-type"></div>
+        </div>
+        <button class="modal-close-btn" onclick="closeModal()" aria-label="Close">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
+            <path d="M15 5L5 15M5 5l10 10"/>
+          </svg>
+        </button>
+      </div>
+      <div id="modal-content">
+        <!-- loading or recipe -->
+      </div>
+      <div class="modal-foot">
+        <button class="copy-btn" onclick="copyRecipe()">Copy Recipe</button>
+        <button class="close-foot" onclick="closeModal()">Close</button>
+        <span class="copied-msg" id="copied-msg">Copied!</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://api.anthropic.com/v1/messages';
+    const MODEL = 'claude-opus-4-6';
+
+    let sel = { season: '', type: '', tier: '' };
+    let menuDishes = [];
+    let menuContext = {};
+    let recipeCache = {};
+    let currentRecipe = null;
+
+    // ── INIT ─────────────────────────────────────────
+
+    (function init() {
+      const k = localStorage.getItem('menu-gen-api-key');
+      if (k) document.getElementById('api-key').value = k;
+
+      const m = new Date().getMonth();
+      const autoSeason = m >= 2 && m <= 4 ? 'Spring'
+                       : m >= 5 && m <= 7 ? 'Summer'
+                       : m >= 8 && m <= 10 ? 'Autumn'
+                       : 'Winter';
+      pickByValue('season', autoSeason);
+
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+      });
+    })();
+
+    function pick(group, val, el) {
+      sel[group] = val;
+      const grpId = { season: 'grp-season', type: 'grp-type', tier: 'grp-tier' }[group];
+      document.querySelectorAll(`#${grpId} .btn-opt`).forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function pickByValue(group, val) {
+      const grpId = { season: 'grp-season', type: 'grp-type', tier: 'grp-tier' }[group];
+      const el = document.querySelector(`#${grpId} [data-v="${val}"]`);
+      if (el) { sel[group] = val; el.classList.add('active'); }
+    }
+
+    function backToForm() {
+      document.getElementById('form-page').style.display = 'block';
+      document.getElementById('menu-page').style.display = 'none';
+    }
+
+    // ── MENU GENERATION ──────────────────────────────
+
+    async function generateMenu(isRegen) {
+      const apiKey = document.getElementById('api-key').value.trim();
+      const ingredients = document.getElementById('ingredients').value.trim();
+      const cuisine = document.getElementById('cuisine').value.trim() || 'Contemporary';
+
+      if (!apiKey)       return showErr('Please enter your Anthropic API key.');
+      if (!ingredients)  return showErr('Please list some available ingredients.');
+      if (!sel.type)     return showErr('Please select a restaurant type.');
+      if (!sel.tier)     return showErr('Please select a price tier.');
+      if (!sel.season)   return showErr('Please select a season.');
+
+      localStorage.setItem('menu-gen-api-key', apiKey);
+      clearErr();
+      recipeCache = {};
+      menuDishes = [];
+
+      const genBtn   = document.getElementById('gen-btn');
+      const regenBtn = document.getElementById('regen-btn');
+
+      if (!isRegen) {
+        genBtn.disabled = true;
+        genBtn.classList.add('spin-state');
+      } else {
+        regenBtn.disabled = true;
+        regenBtn.textContent = 'Generating…';
+      }
+
+      const priceGuide = {
+        Budget:     'starters $6–11, mains $12–19, desserts $5–8',
+        'Mid-range':'starters $12–18, mains $22–36, desserts $8–13',
+        Upscale:    'starters $18–28, mains $38–68, desserts $14–22'
+      }[sel.tier];
+
+      const prompt = `You are an acclaimed chef and menu writer. Create a ${sel.season} seasonal menu for a ${sel.type} restaurant specialising in ${cuisine} cuisine at ${sel.tier} price points.
+
+Available ingredients to draw from: ${ingredients}
+
+Return ONLY a valid JSON object with this exact structure (no markdown, no commentary):
+{
+  "menu_title": "evocative 3–5 word seasonal menu title",
+  "season_note": "one elegant sentence setting the seasonal tone",
+  "starters": [
+    {
+      "name": "Dish Name",
+      "description": "First evocative sentence painting flavour and texture. Second sentence evoking the experience or technique.",
+      "key_ingredients": ["ingredient1", "ingredient2", "ingredient3", "ingredient4"],
+      "price": "$XX"
+    }
+  ],
+  "mains": [ /* same structure, 4 items */ ],
+  "desserts": [ /* same structure, 2 items */ ]
+}
+
+Requirements:
+— 3 starters, 4 mains, 2 desserts
+— Price guide (${sel.tier}): ${priceGuide}
+— Each dish must feel intentional and specific to ${cuisine} cuisine in ${sel.season}
+— Use ingredients from the list wherever possible; complement with seasonally appropriate additions
+— Descriptions should be sensory, appetising, never generic
+— Dish names should sound natural on a real restaurant menu`;
+
+      try {
+        const raw = await claude(apiKey, prompt, 2400);
+        const json = stripFences(raw);
+        const menu = JSON.parse(json);
+        menuContext = { cuisine, season: sel.season, type: sel.type, tier: sel.tier };
+        renderMenu(menu);
+        document.getElementById('form-page').style.display = 'none';
+        document.getElementById('menu-page').style.display = 'block';
+        window.scrollTo(0, 0);
+      } catch (e) {
+        showErr('Error generating menu: ' + e.message);
+      } finally {
+        genBtn.disabled = false;
+        genBtn.classList.remove('spin-state');
+        genBtn.innerHTML = '◆ &ensp; Generate Seasonal Menu';
+        regenBtn.disabled = false;
+        regenBtn.textContent = 'Regenerate Menu';
+      }
+    }
+
+    function renderMenu(menu) {
+      menuDishes = [];
+      let idx = 0;
+
+      function dishBlock(dish) {
+        const i = idx++;
+        menuDishes.push(dish);
+        const ings = dish.key_ingredients.join(' · ');
+        return `
+          <div class="dish-entry fade-up" style="animation-delay:${i * 0.06}s">
+            <div class="dish-line1">
+              <span class="dish-name">${esc(dish.name)}</span>
+              <span class="dish-price">${esc(dish.price)}</span>
+            </div>
+            <div class="dish-ings">${esc(ings)}</div>
+            <p class="dish-desc">${esc(dish.description)}</p>
+            <button class="recipe-btn" onclick="openRecipe(${i})">
+              ✦ Get Full Recipe
+            </button>
+          </div>`;
+      }
+
+      document.getElementById('menu-card').innerHTML = `
+        <div class="menu-hd">
+          <div class="season-tag">${esc(menuContext.season)} ${new Date().getFullYear()}</div>
+          <h2>${esc(menu.menu_title)}</h2>
+          <p class="season-note">${esc(menu.season_note)}</p>
+        </div>
+
+        <div class="orn-divider"><span>✦ Starters ✦</span></div>
+        ${menu.starters.map(dishBlock).join('')}
+
+        <div class="orn-divider" style="margin-top:44px"><span>✦ Mains ✦</span></div>
+        ${menu.mains.map(dishBlock).join('')}
+
+        <div class="orn-divider" style="margin-top:44px"><span>✦ Desserts ✦</span></div>
+        ${menu.desserts.map(dishBlock).join('')}
+
+        <div class="menu-footer">
+          <p>Please inform your server of any dietary requirements or allergies.</p>
+        </div>`;
+    }
+
+    // ── RECIPE MODAL ──────────────────────────────────
+
+    async function openRecipe(idx) {
+      const dish = menuDishes[idx];
+      if (!dish) return;
+
+      document.getElementById('modal-dish-name').textContent = dish.name;
+      document.getElementById('modal-dish-type').textContent =
+        `${menuContext.type} · ${menuContext.cuisine} · ${menuContext.season}`;
+      document.getElementById('modal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      currentRecipe = null;
+
+      // Serve from cache
+      if (recipeCache[dish.name]) {
+        currentRecipe = recipeCache[dish.name];
+        renderRecipe(recipeCache[dish.name]);
+        return;
+      }
+
+      // Loading state
+      document.getElementById('modal-content').innerHTML = `
+        <div class="modal-loading">
+          <div class="ring"></div>
+          <p>Preparing your recipe…</p>
+        </div>`;
+
+      const apiKey = document.getElementById('api-key').value.trim();
+
+      const prompt = `You are an acclaimed professional chef. Write a complete, restaurant-quality recipe for "${dish.name}".
+
+Context: ${menuContext.type} restaurant, ${menuContext.cuisine} cuisine, ${menuContext.season} menu
+Dish description: ${dish.description}
+Key ingredients: ${dish.key_ingredients.join(', ')}
+Price point: ${dish.price}
+
+Return ONLY a valid JSON object (no markdown):
+{
+  "recipe_name": "${dish.name}",
+  "serves": 4,
+  "prep_time": "XX minutes",
+  "cook_time": "XX minutes",
+  "difficulty": "Easy",
+  "ingredients": [
+    "amount + ingredient + prep note",
+    "..."
+  ],
+  "instructions": [
+    "Step as a clear, specific action with technique.",
+    "..."
+  ],
+  "plating_notes": "One or two sentences on presentation, garnish, and service appropriate to the restaurant type.",
+  "chef_notes": "One or two sentences on a key technique, possible substitution, or make-ahead tip."
+}
+
+— difficulty must be exactly: Easy, Medium, or Advanced
+— provide 8–12 ingredients and 6–10 instruction steps
+— be specific with quantities, temperatures (°F and °C), and timing
+— the recipe should match the sophistication level of a ${menuContext.type} kitchen`;
+
+      try {
+        const raw = await claude(apiKey, prompt, 2000);
+        const recipe = JSON.parse(stripFences(raw));
+        recipeCache[dish.name] = recipe;
+        currentRecipe = recipe;
+        renderRecipe(recipe);
+      } catch (e) {
+        document.getElementById('modal-content').innerHTML = `
+          <div class="modal-body">
+            <div class="err-msg">Could not load recipe: ${esc(e.message)}</div>
+          </div>`;
+      }
+    }
+
+    function renderRecipe(r) {
+      const diffClass = { Easy: 'diff-easy', Medium: 'diff-medium', Advanced: 'diff-advanced' };
+      const dc = diffClass[r.difficulty] || 'diff-medium';
+
+      const ingsHTML = r.ingredients.map(i => `<li>${esc(i)}</li>`).join('');
+      const stepsHTML = r.instructions.map(s => `<li>${esc(s)}</li>`).join('');
+
+      document.getElementById('modal-content').innerHTML = `
+        <div class="modal-body fade-up">
+          <div class="r-meta">
+            <span class="r-chip">Serves ${esc(String(r.serves))}</span>
+            <span class="r-chip">Prep ${esc(r.prep_time)}</span>
+            <span class="r-chip">Cook ${esc(r.cook_time)}</span>
+            <span class="r-chip ${dc}">${esc(r.difficulty)}</span>
+          </div>
+
+          <div class="r-sec">
+            <h4>Ingredients</h4>
+            <ul>${ingsHTML}</ul>
+          </div>
+
+          <div class="r-sec">
+            <h4>Method</h4>
+            <ol>${stepsHTML}</ol>
+          </div>
+
+          <div class="r-note">
+            <div class="note-tag">Plating &amp; Presentation</div>
+            <p>${esc(r.plating_notes)}</p>
+          </div>
+
+          <div class="r-note">
+            <div class="note-tag">Chef's Notes</div>
+            <p>${esc(r.chef_notes)}</p>
+          </div>
+        </div>`;
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    function overlayClick(e) {
+      if (e.target === document.getElementById('modal')) closeModal();
+    }
+
+    function copyRecipe() {
+      if (!currentRecipe) return;
+      const r = currentRecipe;
+      const lines = [
+        r.recipe_name.toUpperCase(),
+        `Serves ${r.serves}  ·  Prep ${r.prep_time}  ·  Cook ${r.cook_time}  ·  ${r.difficulty}`,
+        '',
+        'INGREDIENTS',
+        ...r.ingredients.map(i => `  · ${i}`),
+        '',
+        'METHOD',
+        ...r.instructions.map((s, n) => `  ${n + 1}. ${s}`),
+        '',
+        'PLATING & PRESENTATION',
+        `  ${r.plating_notes}`,
+        '',
+        "CHEF'S NOTES",
+        `  ${r.chef_notes}`
+      ];
+      navigator.clipboard.writeText(lines.join('\n')).then(() => {
+        const el = document.getElementById('copied-msg');
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2200);
+      });
+    }
+
+    // ── HELPERS ──────────────────────────────────────
+
+    async function claude(apiKey, prompt, maxTokens) {
+      const res = await fetch(API, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: maxTokens,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      if (!res.ok) {
+        const e = await res.json().catch(() => ({}));
+        throw new Error(e.error?.message || `HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      return data.content[0].text;
+    }
+
+    function stripFences(s) {
+      return s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function showErr(msg) {
+      document.getElementById('form-err').innerHTML = `<div class="err-msg">${msg}</div>`;
+    }
+    function clearErr() {
+      document.getElementById('form-err').innerHTML = '';
+    }
+  </script>
+</body>
+</html>

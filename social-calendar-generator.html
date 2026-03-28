@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Media Content Calendar Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #f8fafc;
+      --surface:  #ffffff;
+      --border:   #e2e8f0;
+      --text:     #1e293b;
+      --text-2:   #64748b;
+      --primary:  #6366f1;
+      --primary-d:#4f46e5;
+      --primary-dim:#eef2ff;
+      --ig:       #e1306c;
+      --ig-dim:   #fce7f3;
+      --fb:       #1877f2;
+      --fb-dim:   #dbeafe;
+      --li:       #0a66c2;
+      --li-dim:   #e0f2fe;
+      --edu:      #06b6d4;
+      --promo:    #f59e0b;
+      --engage:   #8b5cf6;
+      --story:    #ec4899;
+      --bts:      #10b981;
+      --radius:   12px;
+      --shadow:   0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Header ── */
+    .header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-d) 100%);
+      color: white; padding: 18px 28px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .header-icon { font-size: 2rem; line-height: 1; }
+    .header h1 { font-size: 1.2rem; font-weight: 700; }
+    .header .sub { font-size: 0.8rem; opacity: .75; margin-bottom: 2px; }
+
+    /* ── Container ── */
+    .container { max-width: 1120px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── Form card ── */
+    .form-card {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 32px;
+    }
+    .form-section { margin-bottom: 28px; }
+    .form-section:last-child { margin-bottom: 0; }
+    .form-section h3 {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--text-2);
+      margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1/-1; }
+    label { font-size: 0.82rem; font-weight: 500; color: var(--text-2); }
+    input[type=text], input[type=password], textarea {
+      padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+      font-family: inherit; font-size: 0.9rem; color: var(--text); background: var(--bg);
+      transition: border-color .15s, background .15s; outline: none;
+    }
+    input:focus, textarea:focus { border-color: var(--primary); background: white; }
+    textarea { resize: vertical; min-height: 76px; }
+
+    /* ── Segment buttons ── */
+    .seg { display: flex; gap: 7px; flex-wrap: wrap; }
+    .seg-btn {
+      padding: 7px 15px; border: 1.5px solid var(--border); border-radius: 20px;
+      font-size: 0.83rem; font-weight: 500; cursor: pointer; background: white;
+      color: var(--text-2); transition: all .14s; font-family: inherit;
+    }
+    .seg-btn.on { background: var(--primary); border-color: var(--primary); color: white; }
+
+    /* ── Platform checkboxes ── */
+    .platform-checks { display: flex; gap: 14px; flex-wrap: wrap; }
+    .platform-check { cursor: pointer; }
+    .platform-check input { display: none; }
+    .pcheck-badge {
+      display: inline-block; padding: 8px 18px; border-radius: 22px;
+      font-size: 0.85rem; font-weight: 600; border: 2px solid; transition: all .14s; cursor: pointer;
+    }
+    .platform-check.ig .pcheck-badge { border-color: var(--ig); color: var(--ig); }
+    .platform-check.fb .pcheck-badge { border-color: var(--fb); color: var(--fb); }
+    .platform-check.li .pcheck-badge { border-color: var(--li); color: var(--li); }
+    .platform-check.ig.checked .pcheck-badge { background: var(--ig); color: white; }
+    .platform-check.fb.checked .pcheck-badge { background: var(--fb); color: white; }
+    .platform-check.li.checked .pcheck-badge { background: var(--li); color: white; }
+
+    /* ── Pillars ── */
+    .pillars { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    /* ── Generate button ── */
+    .btn-generate {
+      width: 100%; padding: 14px; background: var(--primary); color: white;
+      border: none; border-radius: 10px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: opacity .14s; margin-top: 8px; position: relative;
+      font-family: inherit;
+    }
+    .btn-generate:hover:not(:disabled) { opacity: .9; }
+    .btn-generate:disabled { opacity: .6; cursor: not-allowed; }
+    .btn-generate.loading { color: transparent; }
+    .btn-generate.loading::after {
+      content: ''; position: absolute; width: 20px; height: 20px;
+      border: 2.5px solid rgba(255,255,255,.35); border-top-color: white;
+      border-radius: 50%; top: 50%; left: 50%;
+      transform: translate(-50%,-50%); animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+    /* ── Error ── */
+    .err {
+      padding: 11px 15px; background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: 8px; color: #dc2626; font-size: 0.875rem; margin-top: 12px;
+    }
+
+    /* ── Results ── */
+    #step-results { display: none; }
+    .results-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 14px;
+    }
+    .results-header h2 { font-size: 1.2rem; font-weight: 700; margin-bottom: 3px; }
+    .results-meta { font-size: 0.82rem; color: var(--text-2); }
+
+    .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    /* ── View tabs ── */
+    .view-tabs { display: flex; border: 1.5px solid var(--border); border-radius: 8px; overflow: hidden; }
+    .view-tab {
+      padding: 8px 16px; font-size: 0.85rem; font-weight: 500; cursor: pointer;
+      border: none; background: white; color: var(--text-2); transition: all .14s; font-family: inherit;
+    }
+    .view-tab.active { background: var(--primary); color: white; }
+
+    .btn-action {
+      padding: 8px 16px; background: white; border: 1.5px solid var(--border);
+      border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer;
+      color: var(--text); transition: all .14s; font-family: inherit;
+    }
+    .btn-action:hover { border-color: var(--primary); color: var(--primary); }
+
+    /* ── CALENDAR VIEW ── */
+    #view-calendar { display: block; }
+    .cal-grid { background: white; border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
+    .cal-dow {
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      background: #f1f5f9; border-bottom: 1px solid var(--border);
+    }
+    .cal-dow-cell {
+      padding: 9px 6px; text-align: center; font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em; color: var(--text-2);
+    }
+    .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+    .cal-cell {
+      min-height: 96px; padding: 8px; border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border); cursor: pointer; transition: background .12s;
+    }
+    .cal-cell:nth-child(7n) { border-right: none; }
+    .cal-cell.empty { background: #f8fafc; cursor: default; pointer-events: none; }
+    .cal-cell:not(.empty):hover { background: var(--primary-dim); }
+    .cal-day-num { font-size: 0.78rem; font-weight: 700; color: var(--text-2); margin-bottom: 3px; }
+    .cal-date-str { font-size: 0.65rem; color: var(--text-2); opacity: .65; margin-bottom: 5px; }
+    .cal-platform {
+      display: inline-block; padding: 2px 6px; border-radius: 9px; font-size: 0.62rem;
+      font-weight: 700; color: white; margin-bottom: 3px;
+    }
+    .cal-type-badge {
+      display: inline-block; padding: 1px 5px; border-radius: 6px; font-size: 0.58rem;
+      font-weight: 600; margin-left: 3px; margin-bottom: 3px;
+    }
+    .cal-preview {
+      font-size: 0.68rem; color: var(--text-2); line-height: 1.4;
+      overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+
+    /* ── LIST VIEW ── */
+    #view-list { display: none; }
+    .list-posts { display: flex; flex-direction: column; gap: 10px; }
+    .post-card {
+      background: white; border-radius: 10px; box-shadow: var(--shadow);
+      padding: 16px 20px; border-left: 4px solid;
+    }
+    .post-card-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap;
+    }
+    .post-day-label { font-size: 0.78rem; font-weight: 700; color: var(--text-2); min-width: 44px; }
+    .post-date-label { font-size: 0.78rem; color: var(--text-2); }
+    .pill { padding: 3px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 600; color: white; }
+    .post-pillar-label { font-size: 0.72rem; color: var(--text-2); font-style: italic; margin-left: auto; }
+    .post-caption { font-size: 0.88rem; line-height: 1.65; color: var(--text); white-space: pre-line; }
+    .post-caption.clamped {
+      overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    }
+    .post-toggle { margin-top: 6px; font-size: 0.78rem; color: var(--primary); cursor: pointer; font-weight: 500; }
+    .copy-btn {
+      margin-top: 10px; padding: 5px 12px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 6px; font-size: 0.78rem; cursor: pointer;
+      color: var(--text-2); font-family: inherit; transition: all .12s;
+    }
+    .copy-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .copy-btn.done { color: #10b981; border-color: #10b981; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,.52);
+      z-index: 200; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 16px; padding: 28px; max-width: 580px; width: 100%;
+      max-height: 85vh; overflow-y: auto; position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .modal-close {
+      position: absolute; top: 14px; right: 16px; background: none; border: none;
+      font-size: 1.3rem; cursor: pointer; color: var(--text-2); line-height: 1; padding: 4px;
+    }
+    .modal-day-info { font-size: 0.82rem; color: var(--text-2); margin-bottom: 10px; }
+    .modal-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .modal-pillar-info { font-size: 0.78rem; color: var(--text-2); font-style: italic; margin-bottom: 16px; }
+    .modal-caption { font-size: 0.92rem; line-height: 1.72; color: var(--text); white-space: pre-line; }
+    .modal-copy {
+      margin-top: 18px; padding: 10px 20px; background: var(--primary); color: white;
+      border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: opacity .14s;
+    }
+    .modal-copy:hover { opacity: .88; }
+
+    /* ── Colour helpers ── */
+    .ig-bg { background: var(--ig); }
+    .fb-bg { background: var(--fb); }
+    .li-bg { background: var(--li); }
+    .edu-bg  { background: var(--edu); }
+    .promo-bg   { background: var(--promo); }
+    .engage-bg  { background: var(--engage); }
+    .story-bg   { background: var(--story); }
+    .bts-bg     { background: var(--bts); }
+
+    .ig-border { border-color: var(--ig); }
+    .fb-border { border-color: var(--fb); }
+    .li-border { border-color: var(--li); }
+
+    .edu-type    { background: #e0f7fa; color: #006064; }
+    .promo-type  { background: #fff8e1; color: #e65100; }
+    .engage-type { background: #f3e5f5; color: #6a1b9a; }
+    .story-type  { background: #fce4ec; color: #880e4f; }
+    .bts-type    { background: #e8f5e9; color: #1b5e20; }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 20px;
+      padding: 12px 16px; background: white; border-radius: 8px;
+      box-shadow: var(--shadow); font-size: 0.78rem;
+    }
+    .legend-item { display: flex; align-items: center; gap: 5px; font-weight: 500; color: var(--text-2); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .pillars   { grid-template-columns: 1fr; }
+      .cal-cell  { min-height: 54px; padding: 4px; }
+      .cal-preview, .cal-type-badge { display: none; }
+      .post-pillar-label { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">📅</div>
+  <div>
+    <div class="sub">AI-Powered</div>
+    <h1>Social Media Content Calendar Generator</h1>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- ══════════════ FORM STEP ══════════════ -->
+<div id="step-form">
+  <div class="form-card">
+
+    <div class="form-section">
+      <h3>API Key</h3>
+      <div class="form-group">
+        <label for="api-key">Anthropic API Key</label>
+        <input type="password" id="api-key" placeholder="sk-ant-…">
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Brand Information</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="biz-name">Business Name</label>
+          <input type="text" id="biz-name" placeholder="e.g. Bloom Wellness Studio">
+        </div>
+        <div class="form-group">
+          <label for="industry">Industry</label>
+          <input type="text" id="industry" placeholder="e.g. Health &amp; Wellness, SaaS, Retail">
+        </div>
+        <div class="form-group full">
+          <label for="audience">Target Audience</label>
+          <input type="text" id="audience" placeholder="e.g. Women 25–45 interested in mindfulness and healthy living">
+        </div>
+        <div class="form-group full">
+          <label>Brand Tone</label>
+          <div class="seg" id="tone-seg">
+            <button class="seg-btn on" onclick="setSeg('tone-seg',this)">Playful</button>
+            <button class="seg-btn" onclick="setSeg('tone-seg',this)">Professional</button>
+            <button class="seg-btn" onclick="setSeg('tone-seg',this)">Inspirational</button>
+            <button class="seg-btn" onclick="setSeg('tone-seg',this)">Educational</button>
+            <button class="seg-btn" onclick="setSeg('tone-seg',this)">Witty</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Content Pillars</h3>
+      <div class="pillars">
+        <div class="form-group">
+          <label for="pillar1">Pillar 1</label>
+          <input type="text" id="pillar1" placeholder="e.g. Fitness Tips">
+        </div>
+        <div class="form-group">
+          <label for="pillar2">Pillar 2</label>
+          <input type="text" id="pillar2" placeholder="e.g. Nutrition &amp; Recipes">
+        </div>
+        <div class="form-group">
+          <label for="pillar3">Pillar 3</label>
+          <input type="text" id="pillar3" placeholder="e.g. Community &amp; Inspiration">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Platforms</h3>
+      <div class="platform-checks">
+        <label class="platform-check ig checked" id="check-ig">
+          <input type="checkbox" checked onchange="toggleCheck('check-ig',this)">
+          <span class="pcheck-badge">📸 Instagram</span>
+        </label>
+        <label class="platform-check fb checked" id="check-fb">
+          <input type="checkbox" checked onchange="toggleCheck('check-fb',this)">
+          <span class="pcheck-badge">👍 Facebook</span>
+        </label>
+        <label class="platform-check li checked" id="check-li">
+          <input type="checkbox" checked onchange="toggleCheck('check-li',this)">
+          <span class="pcheck-badge">💼 LinkedIn</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h3>Promotions &amp; Events</h3>
+      <div class="form-group">
+        <label for="promos">Upcoming Promotions or Events <span style="font-weight:400;opacity:.7">(optional)</span></label>
+        <textarea id="promos" placeholder="e.g. Spring sale 30% off April 1–7, Grand opening April 15, New product launch May 1"></textarea>
+      </div>
+    </div>
+
+    <div id="form-err"></div>
+    <button class="btn-generate" id="btn-generate" onclick="generate()">
+      ✨ Generate 30-Day Calendar
+    </button>
+
+  </div>
+</div>
+
+<!-- ══════════════ RESULTS STEP ══════════════ -->
+<div id="step-results">
+  <div class="results-header">
+    <div>
+      <h2 id="cal-title">30-Day Content Calendar</h2>
+      <div class="results-meta" id="cal-meta"></div>
+    </div>
+    <div class="toolbar">
+      <div class="view-tabs">
+        <button class="view-tab active" id="tab-cal"  onclick="switchView('calendar')">📅 Calendar</button>
+        <button class="view-tab"        id="tab-list" onclick="switchView('list')">📋 List</button>
+      </div>
+      <button class="btn-action" onclick="downloadText()">⬇ Download .txt</button>
+      <button class="btn-action" onclick="startOver()">← New Calendar</button>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <strong style="color:var(--text);font-size:.78rem;margin-right:4px">Post Types:</strong>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--edu)"></span>Educational</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--promo)"></span>Promotional</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--engage)"></span>Engagement</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--story)"></span>Story</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--bts)"></span>Behind the Scenes</span>
+  </div>
+
+  <!-- Calendar View -->
+  <div id="view-calendar">
+    <div class="cal-grid">
+      <div class="cal-dow">
+        <div class="cal-dow-cell">Sun</div>
+        <div class="cal-dow-cell">Mon</div>
+        <div class="cal-dow-cell">Tue</div>
+        <div class="cal-dow-cell">Wed</div>
+        <div class="cal-dow-cell">Thu</div>
+        <div class="cal-dow-cell">Fri</div>
+        <div class="cal-dow-cell">Sat</div>
+      </div>
+      <div class="cal-days" id="cal-days"></div>
+    </div>
+  </div>
+
+  <!-- List View -->
+  <div id="view-list">
+    <div class="list-posts" id="list-posts"></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL ══════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal-box">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+  const API    = 'https://api.anthropic.com/v1/messages';
+  const MODEL  = 'claude-opus-4-6';
+  const LS_KEY = 'smc_gen_apikey';
+
+  let calData   = [];
+  let startDate = null;
+
+  // ── Restore API key ──
+  const apiInput = document.getElementById('api-key');
+  apiInput.value = localStorage.getItem(LS_KEY) || '';
+
+  // ── Segment buttons ──
+  function setSeg(groupId, btn) {
+    document.getElementById(groupId).querySelectorAll('.seg-btn').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+  function getSegVal(groupId) {
+    const on = document.querySelector(`#${groupId} .seg-btn.on`);
+    return on ? on.textContent.trim() : '';
+  }
+
+  // ── Platform checkboxes ──
+  function toggleCheck(labelId, cb) {
+    document.getElementById(labelId).classList.toggle('checked', cb.checked);
+  }
+  function getSelectedPlatforms() {
+    const p = [];
+    if (document.querySelector('#check-ig input').checked) p.push('Instagram');
+    if (document.querySelector('#check-fb input').checked) p.push('Facebook');
+    if (document.querySelector('#check-li input').checked) p.push('LinkedIn');
+    return p;
+  }
+
+  // ── Utilities ──
+  function setErr(id, msg) {
+    document.getElementById(id).innerHTML = msg ? `<div class="err">${msg}</div>` : '';
+  }
+  function setLoading(btn, on, label) {
+    btn.disabled = on;
+    btn.classList.toggle('loading', on);
+    if (!on && label) btn.textContent = label;
+  }
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function addDays(d, n) {
+    const r = new Date(d); r.setDate(r.getDate() + n); return r;
+  }
+  function fmtShort(d) {
+    return new Date(d + 'T00:00:00').toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  }
+  function todayISO() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  // ── Claude API ──
+  async function claude(apiKey, prompt, maxTok) {
+    const res = await fetch(API, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: MODEL, max_tokens: maxTok,
+        messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error?.message || `HTTP ${res.status}`);
+    }
+    return (await res.json()).content[0].text;
+  }
+
+  // ── GENERATE ──
+  async function generate() {
+    const apiKey   = apiInput.value.trim();
+    const bizName  = document.getElementById('biz-name').value.trim();
+    const industry = document.getElementById('industry').value.trim();
+    const audience = document.getElementById('audience').value.trim();
+    const tone     = getSegVal('tone-seg');
+    const p1       = document.getElementById('pillar1').value.trim();
+    const p2       = document.getElementById('pillar2').value.trim();
+    const p3       = document.getElementById('pillar3').value.trim();
+    const promos   = document.getElementById('promos').value.trim();
+    const platforms = getSelectedPlatforms();
+
+    setErr('form-err', '');
+
+    if (!apiKey)   return setErr('form-err', 'Please enter your Anthropic API key.');
+    if (!bizName)  return setErr('form-err', 'Please enter your business name.');
+    if (!p1||!p2||!p3) return setErr('form-err', 'Please fill in all 3 content pillars.');
+    if (!platforms.length) return setErr('form-err', 'Please select at least one platform.');
+
+    localStorage.setItem(LS_KEY, apiKey);
+    startDate = todayISO();
+
+    const btn = document.getElementById('btn-generate');
+    setLoading(btn, true);
+
+    const platformCount = platforms.length;
+    const perPlatform   = Math.floor(30 / platformCount);
+    const platformDist  = platforms.map((pl, i) =>
+      `${pl}: ${i < (30 % platformCount) ? perPlatform + 1 : perPlatform} posts`).join(', ');
+
+    const prompt = `You are a social media content strategist. Generate a complete 30-day content calendar.
+
+BRAND:
+- Business Name: ${bizName}
+- Industry: ${industry || 'Not specified'}
+- Target Audience: ${audience || 'General audience'}
+- Brand Tone: ${tone}
+- Content Pillar 1: "${p1}"
+- Content Pillar 2: "${p2}"
+- Content Pillar 3: "${p3}"
+- Active Platforms: ${platforms.join(', ')}
+- Upcoming Promotions/Events: ${promos || 'None'}
+- Start Date: ${startDate}
+
+PLATFORM DISTRIBUTION: ${platformDist}
+
+CAPTION GUIDELINES:
+- Instagram: 120–200 words, end with 6–10 relevant hashtags, visual and engaging
+- Facebook: 100–180 words, conversational, end with 1 question to drive comments, max 2 hashtags
+- LinkedIn: 200–350 words, professional insights in 2–3 paragraphs, end with a thought-provoking question, max 1–2 hashtags
+- All captions: Reflect the ${tone} brand tone throughout
+
+POST TYPES TO ROTATE (use all 5 types, no more than 2 in a row of the same type):
+- Educational: share a tip, how-to, or industry insight related to a content pillar
+- Promotional: highlight a product/service/offer; reference upcoming promotions when appropriate
+- Engagement: ask a question, run a poll idea, or prompt community interaction
+- Story: share a customer success story, brand origin moment, or personal brand narrative
+- Behind the Scenes: show team culture, process, or the human side of the brand
+
+RULES:
+- Exactly 30 posts, days 1 through 30
+- Rotate through all 3 content pillars as evenly as possible (≈10 posts per pillar)
+- Mention the upcoming promotions/events naturally in 3–5 posts across the calendar
+- Vary post types so all 5 types appear multiple times
+- Each caption must be complete and publish-ready — no placeholders like [insert link]
+
+Return ONLY valid JSON, no markdown, no explanation:
+{
+  "posts": [
+    {
+      "day": 1,
+      "date": "YYYY-MM-DD",
+      "platform": "Instagram",
+      "type": "Educational",
+      "pillar": "${p1}",
+      "caption": "Full ready-to-publish caption text here"
+    }
+  ]
+}
+
+Day 1 = ${startDate}. Increment dates sequentially for each day (day 2 = next day, etc.).`;
+
+    try {
+      const raw     = await claude(apiKey, prompt, 12000);
+      const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '');
+      const parsed  = JSON.parse(cleaned);
+
+      if (!Array.isArray(parsed.posts) || parsed.posts.length < 20)
+        throw new Error(`Only got ${parsed.posts?.length ?? 0} posts. Please try again.`);
+
+      calData = parsed.posts.slice(0, 30);
+      renderResults(bizName, platforms, tone);
+      document.getElementById('step-form').style.display = 'none';
+      document.getElementById('step-results').style.display = 'block';
+      window.scrollTo(0, 0);
+    } catch (e) {
+      setErr('form-err', 'Error: ' + e.message);
+    } finally {
+      setLoading(btn, false, '✨ Generate 30-Day Calendar');
+    }
+  }
+
+  // ── RENDER RESULTS ──
+  function renderResults(bizName, platforms, tone) {
+    document.getElementById('cal-title').textContent = `${bizName} — 30-Day Content Calendar`;
+    document.getElementById('cal-meta').textContent =
+      `${platforms.join(' · ')} · ${tone} tone · Starts ${fmtShort(calData[0].date)}`;
+    renderCalendar();
+    renderList();
+  }
+
+  // ── Colour helpers ──
+  function pcClass(platform) {
+    return platform === 'Instagram' ? 'ig' : platform === 'Facebook' ? 'fb' : 'li';
+  }
+  function tcClass(type) {
+    const m = { Educational:'edu', Promotional:'promo', Engagement:'engage',
+                Story:'story', 'Behind the Scenes':'bts' };
+    return m[type] || 'edu';
+  }
+  function pIcon(p) {
+    return p === 'Instagram' ? '📸' : p === 'Facebook' ? '👍' : '💼';
+  }
+
+  // ── CALENDAR VIEW ──
+  function renderCalendar() {
+    const grid = document.getElementById('cal-days');
+    grid.innerHTML = '';
+
+    const firstDate = new Date(calData[0].date + 'T00:00:00');
+    const startDow  = firstDate.getDay(); // 0 = Sunday
+
+    const totalCells = Math.ceil((startDow + calData.length) / 7) * 7;
+
+    for (let i = 0; i < totalCells; i++) {
+      const cell = document.createElement('div');
+      cell.className = 'cal-cell';
+      const dayIdx = i - startDow;
+
+      if (dayIdx < 0 || dayIdx >= calData.length) {
+        cell.classList.add('empty');
+        grid.appendChild(cell);
+        continue;
+      }
+
+      const post = calData[dayIdx];
+      const pc   = pcClass(post.platform);
+      const tc   = tcClass(post.type);
+      const idx  = dayIdx;
+
+      cell.innerHTML = `
+        <div class="cal-day-num">Day ${post.day}</div>
+        <div class="cal-date-str">${fmtShort(post.date)}</div>
+        <span class="cal-platform ${pc}-bg">${pIcon(post.platform)} ${post.platform}</span>
+        <span class="cal-type-badge ${tc}-type">${post.type}</span>
+        <div class="cal-preview">${escHtml(post.caption.substring(0, 90))}…</div>
+      `;
+      cell.addEventListener('click', () => openModal(idx));
+      grid.appendChild(cell);
+    }
+  }
+
+  // ── LIST VIEW ──
+  function renderList() {
+    const container = document.getElementById('list-posts');
+    container.innerHTML = '';
+
+    calData.forEach((post, idx) => {
+      const pc  = pcClass(post.platform);
+      const tc  = tcClass(post.type);
+      const card = document.createElement('div');
+      card.className = `post-card ${pc}-border`;
+      card.innerHTML = `
+        <div class="post-card-header">
+          <span class="post-day-label">Day ${post.day}</span>
+          <span class="post-date-label">${fmtShort(post.date)}</span>
+          <span class="pill ${pc}-bg">${pIcon(post.platform)} ${post.platform}</span>
+          <span class="pill ${tc}-bg">${post.type}</span>
+          <span class="post-pillar-label">${escHtml(post.pillar)}</span>
+        </div>
+        <div class="post-caption clamped" id="cap-${idx}">${escHtml(post.caption)}</div>
+        <div class="post-toggle" id="tog-${idx}" onclick="toggleCap(${idx})">Show more ↓</div>
+        <button class="copy-btn" id="lcb-${idx}" onclick="copyListPost(${idx})">Copy Caption</button>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  function toggleCap(idx) {
+    const cap = document.getElementById('cap-' + idx);
+    const tog = document.getElementById('tog-' + idx);
+    const now = cap.classList.toggle('clamped');
+    tog.textContent = now ? 'Show more ↓' : 'Show less ↑';
+  }
+
+  function copyListPost(idx) {
+    navigator.clipboard.writeText(calData[idx].caption).then(() => {
+      const btn = document.getElementById('lcb-' + idx);
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('done');
+      setTimeout(() => { btn.textContent = 'Copy Caption'; btn.classList.remove('done'); }, 2000);
+    });
+  }
+
+  // ── MODAL ──
+  function openModal(idx) {
+    const post = calData[idx];
+    const pc   = pcClass(post.platform);
+    const tc   = tcClass(post.type);
+
+    document.getElementById('modal-content').innerHTML = `
+      <div class="modal-day-info">Day ${post.day} · ${fmtShort(post.date)}</div>
+      <div class="modal-badges">
+        <span class="pill ${pc}-bg">${pIcon(post.platform)} ${post.platform}</span>
+        <span class="pill ${tc}-bg">${post.type}</span>
+      </div>
+      <div class="modal-pillar-info">Pillar: ${escHtml(post.pillar)}</div>
+      <div class="modal-caption">${escHtml(post.caption)}</div>
+      <button class="modal-copy" id="mcopy-btn" onclick="copyModalPost(${idx})">Copy Caption</button>
+    `;
+    document.getElementById('modal-overlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function copyModalPost(idx) {
+    navigator.clipboard.writeText(calData[idx].caption).then(() => {
+      const btn = document.getElementById('mcopy-btn');
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => { btn.textContent = 'Copy Caption'; }, 2000);
+    });
+  }
+
+  function closeModal(e) {
+    if (e && e.target !== document.getElementById('modal-overlay')) return;
+    closeModalDirect();
+  }
+  function closeModalDirect() {
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModalDirect();
+  });
+
+  // ── VIEW TOGGLE ──
+  function switchView(v) {
+    document.getElementById('view-calendar').style.display = v === 'calendar' ? 'block' : 'none';
+    document.getElementById('view-list').style.display     = v === 'list'     ? 'block' : 'none';
+    document.getElementById('tab-cal').classList.toggle('active',  v === 'calendar');
+    document.getElementById('tab-list').classList.toggle('active', v === 'list');
+  }
+
+  // ── DOWNLOAD AS TEXT ──
+  function downloadText() {
+    const title = document.getElementById('cal-title').textContent;
+    let txt = `${title}\nGenerated: ${new Date().toLocaleDateString()}\n`;
+    txt += '═'.repeat(60) + '\n\n';
+
+    calData.forEach(post => {
+      txt += `DAY ${post.day}  ·  ${fmtShort(post.date)}\n`;
+      txt += `Platform : ${post.platform}\n`;
+      txt += `Type     : ${post.type}\n`;
+      txt += `Pillar   : ${post.pillar}\n\n`;
+      txt += post.caption + '\n\n';
+      txt += '─'.repeat(60) + '\n\n';
+    });
+
+    const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), { href: url, download: 'content-calendar.txt' });
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ── START OVER ──
+  function startOver() {
+    document.getElementById('step-results').style.display = 'none';
+    document.getElementById('step-form').style.display    = 'block';
+    calData = [];
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>

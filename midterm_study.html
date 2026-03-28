@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Law & Ethics Midterm Study</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f0f1a; color: #e8e8f0; min-height: 100vh; }
+
+    /* ── HOME ── */
+    #home { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; }
+    #home h1 { font-size: 2.8rem; color: #e94560; letter-spacing: -1px; }
+    #home .subtitle { color: #888; margin: 0.5rem 0 2.5rem; font-size: 1rem; }
+    .stats { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2.5rem; }
+    .stat { background: #1a1a2e; padding: 1rem 2rem; border-radius: 10px; }
+    .stat .num { font-size: 2rem; font-weight: 700; color: #e94560; }
+    .stat .lbl { color: #777; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+    .mode-btns { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    .mode-btn { background: #1a1a2e; border: 2px solid #e94560; color: #fff; padding: 1.8rem 3rem; border-radius: 14px; font-size: 1.2rem; cursor: pointer; transition: all 0.2s; min-width: 180px; }
+    .mode-btn:hover { background: #e94560; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(233,69,96,0.3); }
+    .mode-btn .icon { font-size: 2.2rem; display: block; margin-bottom: 0.6rem; }
+
+    /* ── SHARED ── */
+    .screen { display: none; min-height: 100vh; padding: 1.5rem; max-width: 800px; margin: 0 auto; }
+    .top-bar { display: flex; align-items: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 1px solid #222; margin-bottom: 1.5rem; }
+    .top-bar h2 { font-size: 1.4rem; }
+    .back-btn { background: none; border: 1px solid #444; color: #aaa; padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
+    .back-btn:hover { border-color: #e94560; color: #e94560; }
+
+    /* ── FLASHCARDS ── */
+    .cat-strip { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .cat-btn { background: #1a1a2e; border: 1px solid #333; color: #888; padding: 0.35rem 0.85rem; border-radius: 20px; cursor: pointer; font-size: 0.82rem; transition: all 0.15s; }
+    .cat-btn.active { background: #e94560; border-color: #e94560; color: #fff; }
+    .cat-btn:hover:not(.active) { border-color: #e94560; color: #e94560; }
+
+    .card-wrap { display: flex; flex-direction: column; align-items: center; }
+    .card-counter { color: #666; font-size: 0.9rem; margin-bottom: 1rem; }
+    .flashcard { width: 100%; max-width: 680px; height: 280px; perspective: 1200px; cursor: pointer; }
+    .fc-inner { position: relative; width: 100%; height: 100%; transition: transform 0.45s cubic-bezier(.4,0,.2,1); transform-style: preserve-3d; }
+    .flashcard.flipped .fc-inner { transform: rotateY(180deg); }
+    .fc-front, .fc-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+    .fc-front { background: #1a1a2e; border: 2px solid #e94560; }
+    .fc-back  { background: #0d2e3e; border: 2px solid #4ecca3; transform: rotateY(180deg); }
+    .fc-tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.8rem; color: #e94560; }
+    .fc-back .fc-tag { color: #4ecca3; }
+    .fc-text { font-size: 1.1rem; line-height: 1.65; white-space: pre-wrap; }
+    .fc-back .fc-text { font-size: 1rem; color: #c8f5eb; }
+    .fc-hint { margin-top: 1rem; font-size: 0.75rem; color: #555; }
+
+    .card-nav { display: flex; gap: 0.75rem; margin-top: 1.25rem; align-items: center; }
+    .nav-btn { background: #1a1a2e; border: 1px solid #e94560; color: #e94560; padding: 0.6rem 1.3rem; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.95rem; }
+    .nav-btn:hover:not(:disabled) { background: #e94560; color: #fff; }
+    .nav-btn:disabled { border-color: #333; color: #444; cursor: not-allowed; }
+    .shuf-btn { background: #1a1a2e; border: 1px solid #4ecca3; color: #4ecca3; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
+    .shuf-btn:hover { background: #4ecca3; color: #000; }
+
+    /* ── QUIZ ── */
+    .prog-bar { background: #1a1a2e; height: 6px; border-radius: 3px; margin-bottom: 1.5rem; overflow: hidden; }
+    .prog-fill { background: #e94560; height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .q-box { background: #1a1a2e; border-radius: 12px; padding: 1.75rem; margin-bottom: 1.25rem; }
+    .q-label { color: #e94560; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem; }
+    .q-text { font-size: 1.05rem; line-height: 1.65; }
+    .options { display: flex; flex-direction: column; gap: 0.7rem; }
+    .opt { background: #13132a; border: 2px solid #2a2a4a; color: #ddd; padding: 0.9rem 1.3rem; border-radius: 9px; cursor: pointer; text-align: left; font-size: 0.98rem; transition: all 0.15s; }
+    .opt:hover:not(.locked) { border-color: #e94560; color: #fff; }
+    .opt.correct { border-color: #4ecca3 !important; background: #0a2e20; color: #4ecca3; }
+    .opt.wrong   { border-color: #e94560 !important; background: #2e0a15; color: #e94560; }
+    .opt.locked  { cursor: not-allowed; }
+    .explanation { background: #0a2a1a; border: 1px solid #4ecca3; border-radius: 9px; padding: 1rem 1.3rem; margin-top: 1rem; color: #a8f0d8; font-size: 0.9rem; line-height: 1.55; display: none; }
+    .explanation.show { display: block; }
+    .quiz-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; }
+    .quiz-score-lbl { color: #666; font-size: 0.9rem; }
+    .next-btn { background: #e94560; border: none; color: #fff; padding: 0.65rem 1.4rem; border-radius: 8px; cursor: pointer; font-size: 0.95rem; display: none; transition: background 0.15s; }
+    .next-btn:hover { background: #c73652; }
+
+    /* ── RESULTS ── */
+    #results { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; }
+    .score-ring { width: 160px; height: 160px; border-radius: 50%; border: 7px solid #e94560; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 1.75rem; }
+    .score-pct { font-size: 2.8rem; font-weight: 700; color: #e94560; line-height: 1; }
+    .score-frac { color: #888; font-size: 0.9rem; margin-top: 0.3rem; }
+    #result-title { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    #result-msg { color: #888; margin-bottom: 2rem; }
+    .result-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .res-btn { padding: 0.75rem 1.5rem; border-radius: 9px; font-size: 1rem; cursor: pointer; border: 2px solid; transition: all 0.15s; }
+    .res-btn.primary { background: #e94560; border-color: #e94560; color: #fff; }
+    .res-btn.primary:hover { background: #c73652; }
+    .res-btn.secondary { background: none; border-color: #444; color: #aaa; }
+    .res-btn.secondary:hover { border-color: #aaa; color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home">
+  <h1>Law &amp; Ethics Study</h1>
+  <p class="subtitle">4th Amendment &middot; Federal Laws &middot; Ethics Frameworks &middot; Constitutional Amendments</p>
+  <div class="stats">
+    <div class="stat"><div class="num" id="stat-cards">0</div><div class="lbl">Flashcards</div></div>
+    <div class="stat"><div class="num" id="stat-quiz">0</div><div class="lbl">Quiz Questions</div></div>
+    <div class="stat"><div class="num">7</div><div class="lbl">Topics</div></div>
+  </div>
+  <div class="mode-btns">
+    <button class="mode-btn" onclick="startFlashcards()"><span class="icon">🃏</span>Flashcards</button>
+    <button class="mode-btn" onclick="startQuiz()"><span class="icon">📝</span>Quiz</button>
+  </div>
+</div>
+
+<!-- FLASHCARD MODE -->
+<div class="screen" id="fc-screen">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">← Home</button>
+    <h2>Flashcards</h2>
+  </div>
+  <div class="cat-strip" id="cat-strip"></div>
+  <div class="card-wrap">
+    <div class="card-counter" id="card-counter"></div>
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="fc-inner">
+        <div class="fc-front">
+          <div class="fc-tag" id="fc-tag-f"></div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">Click to reveal answer</div>
+        </div>
+        <div class="fc-back">
+          <div class="fc-tag" id="fc-tag-b"></div>
+          <div class="fc-text" id="fc-back-text"></div>
+          <div class="fc-hint">Click to flip back</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-nav">
+      <button class="nav-btn" id="prev-btn" onclick="prevCard()">← Prev</button>
+      <button class="shuf-btn" onclick="shuffleCards()">Shuffle</button>
+      <button class="nav-btn" id="next-btn" onclick="nextCard()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ MODE -->
+<div class="screen" id="quiz-screen">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">← Home</button>
+    <h2>Quiz</h2>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+  <div class="q-box">
+    <div class="q-label" id="q-label"></div>
+    <div class="q-text" id="q-text"></div>
+  </div>
+  <div class="options" id="options"></div>
+  <div class="explanation" id="explanation"></div>
+  <div class="quiz-footer">
+    <div class="quiz-score-lbl" id="q-score"></div>
+    <button class="next-btn" id="next-btn-q" onclick="nextQuestion()">Next →</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="score-ring">
+    <div class="score-pct" id="res-pct"></div>
+    <div class="score-frac" id="res-frac"></div>
+  </div>
+  <h2 id="result-title"></h2>
+  <p id="result-msg"></p>
+  <div class="result-actions">
+    <button class="res-btn primary" onclick="startQuiz()">Retake Quiz</button>
+    <button class="res-btn secondary" onclick="showHome()">Home</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// FLASHCARD DATA
+// ─────────────────────────────────────────
+const CARDS = [
+  // 4th Amendment Basics
+  { cat: "4th Amendment", front: "What does the Fourth Amendment protect against?", back: "Unreasonable searches and seizures by the government." },
+  { cat: "4th Amendment", front: "To whom does the Fourth Amendment apply?", back: "Only to government conduct — law enforcement or private parties acting at the direction of the government.\n\nIf the action is purely private, the Fourth Amendment usually does NOT apply." },
+  { cat: "4th Amendment", front: "What are the two ways a 'search' occurs?", back: "1. The government violates a reasonable expectation of privacy, OR\n2. The government physically intrudes into a constitutionally protected area to obtain information." },
+  { cat: "4th Amendment", front: "Two-part test for reasonable expectation of privacy:", back: "1. Did the person have a subjective expectation of privacy?\n2. Is that expectation one society recognizes as reasonable?" },
+  { cat: "4th Amendment", front: "Default rule for government searches:", back: "Searches require a warrant supported by probable cause and particularity." },
+  { cat: "4th Amendment", front: "Three requirements for a valid search warrant:", back: "1. Probable cause\n2. Neutral magistrate approval\n3. Specific description of places and items to be searched" },
+  { cat: "4th Amendment", front: "What is probable cause?", back: "A reasonable belief, based on facts, that a crime has been, is being, or will be committed.\n\nHigher than mere suspicion, but does not require absolute certainty." },
+  { cat: "4th Amendment", front: "What is the Exclusionary Rule?", back: "A judicial doctrine preventing prosecutors from using evidence obtained through unconstitutional searches or seizures.\n\nPurpose: to deter law enforcement from violating the Fourth Amendment." },
+  { cat: "4th Amendment", front: "What is the Fruit of the Poisonous Tree doctrine?", back: "Not only is illegally obtained evidence inadmissible — any additional evidence derived from that initial constitutional violation is also inadmissible in court." },
+  { cat: "4th Amendment", front: "What is the Good-Faith Exception?", back: "From United States v. Leon — courts will admit evidence if officers reasonably relied on a warrant, even if it was later found deficient, unless reliance was objectively unreasonable." },
+  { cat: "4th Amendment", front: "What is particularity in the context of a warrant?", back: "Requirement that a warrant specifically describe:\n• The place to be searched\n• The items to be seized\n\nPrevents overly broad or general searches. Digital warrants frequently raise overbreadth concerns." },
+  { cat: "4th Amendment", front: "What is the Third-Party Doctrine?", back: "Traditional rule: individuals have no reasonable expectation of privacy in information voluntarily shared with third parties (e.g., phone companies, ISPs).\n\nChallenged by Carpenter v. US — long-term digital location data still requires a warrant." },
+
+  // Warrant Exceptions
+  { cat: "Warrant Exceptions", front: "List all 6 main exceptions to the warrant requirement:", back: "1. Consent\n2. Exigent circumstances\n3. Search incident to arrest\n4. Automobile exception\n5. Plain view\n6. Border searches / mass transit" },
+  { cat: "Warrant Exceptions", front: "Consent exception:", back: "If an individual voluntarily consents to a search, a warrant is not needed." },
+  { cat: "Warrant Exceptions", front: "Exigent circumstances exception:", back: "In emergency situations where there is a risk of harm or destruction of evidence, law enforcement can search without a warrant." },
+  { cat: "Warrant Exceptions", front: "Search incident to arrest exception:", back: "Law enforcement can search a person and the immediate area around them without a warrant when making a lawful arrest." },
+  { cat: "Warrant Exceptions", front: "Automobile exception:", back: "Due to the mobile nature of vehicles, law enforcement can search a vehicle without a warrant if they have probable cause to believe it contains evidence of a crime." },
+  { cat: "Warrant Exceptions", front: "Plain view exception:", back: "If evidence is in plain view of officers who are legally present, it can be seized without a warrant." },
+
+  // Key Cases
+  { cat: "Key Cases", front: "Katz v. United States (1967)", back: "Facts: FBI recorded phone calls from a public booth without a warrant.\n\nHolding: The 4th Amendment protects people, not places. A search occurs when the government violates a reasonable expectation of privacy — even without physical intrusion.\n\nSignificance: Created the modern privacy framework." },
+  { cat: "Key Cases", front: "United States v. Jones (2012)", back: "Facts: Police secretly installed a GPS tracker on a vehicle without a valid warrant.\n\nHolding: Attaching the device constituted a Fourth Amendment search because it involved physical trespass to gather information.\n\nSignificance: Laid groundwork for digital tracking cases." },
+  { cat: "Key Cases", front: "Riley v. California (2014)", back: "Facts: Police searched a cell phone incident to arrest without a warrant.\n\nHolding: Digital devices contain vast personal information and generally require a warrant before their contents can be examined — even after arrest.\n\nSignificance: Reshaped 4th Amendment doctrine for smartphones." },
+  { cat: "Key Cases", front: "Carpenter v. United States (2018)", back: "Facts: Government obtained historical cell-site location information (CSLI) from a carrier without a warrant.\n\nHolding: Long-term location tracking constitutes a 4th Amendment search requiring probable cause. Limited the third-party doctrine.\n\nSignificance: Cornerstone case for geofencing, digital surveillance, large-scale data collection." },
+  { cat: "Key Cases", front: "United States v. McCall (Good-Faith & Digital Warrants)", back: "Issue: Should iCloud evidence be suppressed when the warrant lacked particularity but officers relied on it in good faith?\n\nHolding: Eleventh Circuit affirmed denial of suppression. Good-faith exception applied — law governing cloud searches remains unsettled, so it was unreasonable to expect officers to identify defects courts themselves debate." },
+
+  // 7-Step Framework
+  { cat: "Analytical Framework", front: "The 7-Step Fourth Amendment Analytical Framework:", back: "1. Government action?\n2. Search or seizure?\n3. Warrant required?\n4. Exception applies?\n5. Particularity and scope?\n6. Suppression or good faith?\n7. Relevant precedent?" },
+  { cat: "Analytical Framework", front: "Step 1 — Identify Government Action", back: "The 4th Amendment only applies to government conduct.\n\nAsk:\n• Was there action by law enforcement or a government agent?\n• Was a private party acting at the government's direction?\n\nIf purely private → 4th Amendment does NOT apply." },
+  { cat: "Analytical Framework", front: "Step 2 — Determine Whether a Search or Seizure Occurred", back: "A search occurs when the government:\n• Violates a reasonable expectation of privacy, OR\n• Physically intrudes into a constitutionally protected area to obtain information\n\nIn tech cases: courts analyze digital data, location info, or cloud storage under this step." },
+  { cat: "Analytical Framework", front: "Step 5 — Evaluate Particularity and Scope", back: "Analyze whether the warrant was too broad or resembled a general search.\n\n• Was it limited by time, subject matter, or data type?\n• Did officers search beyond what the warrant allowed?\n\nDigital warrants frequently raise overbreadth concerns." },
+  { cat: "Analytical Framework", front: "Step 6 — Consider Remedies and the Good-Faith Exception", back: "If a violation occurred, assess whether evidence should be suppressed under the exclusionary rule.\n\nBut check: does the good-faith exception (US v. Leon) apply?\n\nRecent trend: courts exclude in future cases using 'notice' logic but apply good-faith exception on first occurrence." },
+
+  // Federal Laws
+  { cat: "Federal Laws", front: "Computer Fraud and Abuse Act (CFAA) — 1986", back: "Primary federal law for prosecuting cybercrimes.\n\nCriminalizes: Unauthorized access to computers/networks; protects classified info, financial data, and government systems.\n\nPenalties: Fines and imprisonment based on severity." },
+  { cat: "Federal Laws", front: "Federal Information Security Modernization Act (FISMA) — 2002/2014", back: "Requires federal agencies to develop, document, and implement an information security program.\n\nKey provisions: Framework for securing federal systems; mandates regular audits; agencies must report cybersecurity status.\n\nPenalties: Administrative actions and loss of federal funding." },
+  { cat: "Federal Laws", front: "Cybersecurity Information Sharing Act (CISA) — 2015", back: "Facilitates sharing of cybersecurity threat information between federal government and private sector.\n\nKey provisions: Voluntary sharing of cyber threat indicators; liability protections for sharing companies; mandates privacy protections.\n\nPenalties: No direct penalties, but failure to share increases vulnerability." },
+  { cat: "Federal Laws", front: "Health Insurance Portability and Accountability Act (HIPAA) — 1996", back: "Protects security and privacy of health information.\n\nKey provisions: Healthcare organizations must implement safeguards, conduct risk assessments, and report breaches.\n\nPenalties: Civil and criminal penalties; fines up to $1.5 million per violation category per year." },
+  { cat: "Federal Laws", front: "Gramm-Leach-Bliley Act (GLBA) — 1999", back: "Requires financial institutions to protect security and confidentiality of customer information.\n\nKey provisions: Mandates security programs; restricts sharing of nonpublic personal info; requires customer notifications about privacy practices.\n\nPenalties: Up to $100,000 per violation for institutions; $10,000 per violation for officers/directors." },
+  { cat: "Federal Laws", front: "Children's Online Privacy Protection Act (COPPA) — 1998", back: "Protects privacy of children under 13 years of age online.\n\nKey provisions: Operators of websites directed at children must obtain verifiable parental consent before collecting personal info; mandates clear privacy policies.\n\nPenalties: Civil fines up to $43,280 per violation." },
+  { cat: "Federal Laws", front: "Digital Millennium Copyright Act (DMCA) — 1998", back: "Addresses copyright in the digital age; implements two WIPO treaties.\n\nKey provisions:\n• Notice-and-takedown system for online service providers\n• Criminalizes circumvention of DRM technologies\n• Limits ISP liability for user copyright infringement\n\nPenalties: Civil and criminal penalties for infringement and DRM circumvention." },
+  { cat: "Federal Laws", front: "Which law covers unauthorized computer access?", back: "CFAA — Computer Fraud and Abuse Act (1986)" },
+  { cat: "Federal Laws", front: "Which law covers federal agency cybersecurity programs?", back: "FISMA — Federal Information Security Modernization Act (2002, updated 2014)" },
+  { cat: "Federal Laws", front: "Which law covers health data breaches?", back: "HIPAA — Health Insurance Portability and Accountability Act (1996)" },
+  { cat: "Federal Laws", front: "Which law covers financial institution customer data?", back: "GLBA — Gramm-Leach-Bliley Act (1999)" },
+  { cat: "Federal Laws", front: "Which law protects children's online privacy (under 13)?", back: "COPPA — Children's Online Privacy Protection Act (1998)" },
+  { cat: "Federal Laws", front: "Which law governs digital copyright and DRM circumvention?", back: "DMCA — Digital Millennium Copyright Act (1998)" },
+  { cat: "Federal Laws", front: "Which law facilitates cybersecurity threat information sharing?", back: "CISA — Cybersecurity Information Sharing Act (2015)" },
+
+  // Constitutional Amendments (1st–5th and 14th only)
+  { cat: "Amendments", front: "1st Amendment (1791)", back: "Protects freedoms of religion, speech, press, assembly, and petition." },
+  { cat: "Amendments", front: "2nd Amendment (1791)", back: "Protects the right to keep and bear arms." },
+  { cat: "Amendments", front: "3rd Amendment (1791)", back: "Prohibits the forced quartering of soldiers in private homes during peacetime." },
+  { cat: "Amendments", front: "4th Amendment (1791)", back: "Protects against unreasonable searches and seizures." },
+  { cat: "Amendments", front: "5th Amendment (1791)", back: "Establishes rights related to criminal prosecutions, including due process and protection against self-incrimination." },
+  { cat: "Amendments", front: "14th Amendment (1868)", back: "Defines citizenship and guarantees equal protection and due process under the law." },
+  { cat: "Amendments", front: "Which amendment protects free speech and peaceful protest?", back: "1st Amendment (1791)" },
+  { cat: "Amendments", front: "Which amendment guarantees equal protection and due process?", back: "14th Amendment (1868)" },
+  { cat: "Amendments", front: "Which amendment protects against self-incrimination?", back: "5th Amendment (1791)" },
+  { cat: "Amendments", front: "Which amendment prohibits the forced quartering of soldiers?", back: "3rd Amendment (1791)" },
+  { cat: "Amendments", front: "5th vs. 14th Amendment — Due Process", back: "5th Amendment → due process applies against the federal government.\n14th Amendment → due process (and equal protection) applies against state governments." },
+
+  // Ethics
+  { cat: "Ethics", front: "Deontology (Duty-Based Ethics)", back: "Core idea: Actions are ethical if they follow moral rules, duties, or professional obligations — regardless of outcomes.\n\nKey question: Am I doing what is morally required or prohibited?\n\nFocus: Duties, rules, rights, obligations.\n\nLimitation: May be rigid; may not account for competing harms or benefits." },
+  { cat: "Ethics", front: "Justice Ethics (Fairness-Based Ethics)", back: "Core idea: Ethical actions treat individuals and groups fairly and distribute benefits and burdens equitably.\n\nKey question: Is this decision fair to everyone affected?\n\nFocus: Fairness, equality, equity, due process.\n\nLimitation: Concepts of fairness may vary; may conflict with efficiency or cost concerns." },
+  { cat: "Ethics", front: "Utilitarianism (Outcome-Based Ethics)", back: "Core idea: The most ethical action produces the greatest overall good for the greatest number of people.\n\nKey question: Which option results in the best overall consequences?\n\nFocus: Outcomes, benefits vs. harms, overall well-being.\n\nLimitation: Can justify harm to minorities; outcomes are often difficult to measure accurately." },
+  { cat: "Ethics", front: "Deontology vs. Justice Ethics vs. Utilitarianism — Quick Summary", back: "Deontology → moral rules and duties\nJustice Ethics → fairness and equitable treatment\nUtilitarianism → outcomes and overall benefit\n\nNote: Professionals often use multiple frameworks together to analyze complex ethical dilemmas." },
+  { cat: "Ethics", front: "Engineer refuses to sign off on an unsafe design despite deadline pressure — which framework?", back: "Deontology — following a professional duty/rule regardless of the outcome (missing the deadline)." },
+  { cat: "Ethics", front: "Company audits AI hiring tool to ensure it doesn't disadvantage candidates by race/gender — which framework?", back: "Justice Ethics — ensuring fair and equitable treatment for all candidates." },
+  { cat: "Ethics", front: "City deploys AI traffic system that inconveniences some drivers but significantly reduces accidents — which framework?", back: "Utilitarianism — the option producing the best overall consequences for the greatest number." },
+  { cat: "Ethics", front: "Software developer refuses to deploy AI that collects user data without informed consent — which framework?", back: "Deontology — refusing to violate a professional duty (informed consent requirement) regardless of other outcomes." },
+  { cat: "Ethics", front: "A data scientist reports manipulated test results rather than allowing flawed findings to be published — which framework?", back: "Deontology — following a professional obligation to report truthfully, regardless of consequences to reputation or project." },
+];
+
+// ─────────────────────────────────────────
+// QUIZ DATA
+// ─────────────────────────────────────────
+const QUIZ = [
+  // — From Past Test 1 (10 questions) —
+  {
+    q: "The Fourth Amendment protects citizens from which type of searches and seizures?",
+    opts: ["Administrative", "Unreasonable", "Private"],
+    ans: 1,
+    exp: "The Fourth Amendment specifically protects against unreasonable searches and seizures by the government."
+  },
+  {
+    q: "True or False: For a search or seizure to be considered reasonable, it usually requires a warrant issued by a judge or magistrate.",
+    opts: ["True", "False"],
+    ans: 0,
+    exp: "True. The default rule is that searches require a warrant supported by probable cause, issued by a neutral magistrate."
+  },
+  {
+    q: "Probable cause means:",
+    opts: ["A reasonable belief that a crime has been, is being, or will be committed", "Any suspicion held by law enforcement", "Proof beyond a reasonable doubt"],
+    ans: 0,
+    exp: "Probable cause is a reasonable belief based on facts — higher than mere suspicion but not requiring absolute certainty."
+  },
+  {
+    q: "True or False: Evidence obtained in violation of the Fourth Amendment is typically excluded from court under the exclusionary rule.",
+    opts: ["True", "False"],
+    ans: 0,
+    exp: "True. The exclusionary rule prevents prosecutors from using evidence obtained through unconstitutional searches or seizures."
+  },
+  {
+    q: "Advanced surveillance tools such as geofence warrants and facial recognition primarily raise concerns about balancing law enforcement needs with:",
+    opts: ["Contract rights", "Individual privacy rights", "Property taxes"],
+    ans: 1,
+    exp: "These technologies raise significant questions about the balance between law enforcement needs and individual privacy rights."
+  },
+  {
+    q: "Which of the following is an exception to the warrant requirement?",
+    opts: ["Consent only", "Plain View only", "All of the Above (Consent and Plain View)"],
+    ans: 2,
+    exp: "Both consent and plain view are exceptions, along with exigent circumstances, search incident to arrest, automobile exception, and border searches."
+  },
+  {
+    q: "True or False: Under the traditional third-party doctrine, individuals generally have no reasonable expectation of privacy in information voluntarily shared with service providers.",
+    opts: ["True", "False"],
+    ans: 0,
+    exp: "True — traditionally. However, Carpenter v. US (2018) limited this doctrine for long-term digital location data."
+  },
+  {
+    q: "Which requirement helps prevent overly broad digital searches by limiting what officers may look for?",
+    opts: ["Particularity", "Reasonable suspicion", "Administrative review"],
+    ans: 0,
+    exp: "The particularity requirement mandates that warrants specifically describe the place to be searched and items to be seized, preventing general searches."
+  },
+  {
+    q: "True or False: The first step in analyzing a Fourth Amendment issue is determining whether there was government action.",
+    opts: ["True", "False"],
+    ans: 0,
+    exp: "True. Step 1 of the Fourth Amendment analytical framework is identifying whether there was government action — the amendment only applies to government conduct."
+  },
+  {
+    q: "A 'search' under modern Fourth Amendment analysis generally occurs when:",
+    opts: ["The government violates a reasonable expectation of privacy or physically intrudes to obtain information", "Police feel suspicious about someone", "Someone files a complaint with the government"],
+    ans: 0,
+    exp: "From Katz v. US — a search occurs when the government violates a reasonable expectation of privacy OR physically intrudes into a constitutionally protected area."
+  },
+
+  // — From Past Test 2 (10 questions) —
+  {
+    q: "A hospital experiences a breach of electronic patient records and fails to report it. Which law governs this situation?",
+    opts: ["GLBA", "COPPA", "HIPAA", "CFAA"],
+    ans: 2,
+    exp: "HIPAA (1996) governs the security and privacy of health information and requires healthcare organizations to report breaches."
+  },
+  {
+    q: "True or False: Under deontology, an action may be considered ethical if it produces good outcomes, even when it violates professional rules or duties.",
+    opts: ["True", "False"],
+    ans: 1,
+    exp: "False. Deontology holds that actions must follow moral rules and duties regardless of outcomes. Violating professional rules is unethical under deontology even if it produces positive results."
+  },
+  {
+    q: "A public university disciplines a student for peacefully protesting campus policies in a public quad. Which constitutional amendment is most directly implicated?",
+    opts: ["1st Amendment", "4th Amendment", "5th Amendment", "14th Amendment"],
+    ans: 0,
+    exp: "The 1st Amendment protects freedoms of speech, assembly, and petition — directly applicable to peaceful public protests."
+  },
+  {
+    q: "Which ethical theory asks the question: 'Is this decision fair to everyone affected?'",
+    opts: ["Deontology", "Justice Ethics", "Utilitarianism"],
+    ans: 1,
+    exp: "Justice Ethics (fairness-based ethics) focuses on equitable treatment and asks whether a decision is fair to all affected parties."
+  },
+  {
+    q: "True or False: FISMA requires federal agencies to develop and maintain an information security program.",
+    opts: ["True", "False"],
+    ans: 0,
+    exp: "True. FISMA (2002, updated 2014) requires federal agencies to develop, document, and implement information security programs."
+  },
+  {
+    q: "Which federal law makes it illegal to access a computer system without authorization or to exceed authorized access?",
+    opts: ["HIPAA", "CFAA", "GLBA", "COPPA"],
+    ans: 1,
+    exp: "The CFAA (Computer Fraud and Abuse Act, 1986) is the primary federal law criminalizing unauthorized access to computer systems."
+  },
+  {
+    q: "A state law is challenged because it treats similarly situated groups differently without a valid justification. Which amendment is most relevant?",
+    opts: ["1st Amendment", "4th Amendment", "5th Amendment", "14th Amendment"],
+    ans: 3,
+    exp: "The 14th Amendment guarantees equal protection under the law — the basis for challenging laws that treat similarly situated groups differently without justification."
+  },
+  {
+    q: "Which law establishes a notice-and-takedown system for copyrighted content and criminalizes the circumvention of DRM technologies?",
+    opts: ["DMCA", "CFAA", "GLBA", "COPPA"],
+    ans: 0,
+    exp: "The DMCA (Digital Millennium Copyright Act, 1998) established the notice-and-takedown system and criminalized circumvention of DRM technologies."
+  },
+  {
+    q: "A software engineer refuses to release an AI system because it collects user data without informed consent. Which ethical theory best explains this decision?",
+    opts: ["Deontology", "Justice Ethics", "Utilitarianism"],
+    ans: 0,
+    exp: "Deontology — the engineer is following a professional duty (informed consent is required) regardless of other outcomes. Refusing to violate an ethical rule is a hallmark of deontological reasoning."
+  },
+  {
+    q: "True or False: The amendment that protects individuals from unreasonable searches and seizures is the 4th Amendment.",
+    opts: ["True", "False"],
+    ans: 0,
+    exp: "True. The Fourth Amendment (1791) specifically protects against unreasonable searches and seizures."
+  },
+
+  // — Additional: Key Cases (6 questions) —
+  {
+    q: "Which Supreme Court case established that 'the Fourth Amendment protects people, not places'?",
+    opts: ["United States v. Jones (2012)", "Katz v. United States (1967)", "Riley v. California (2014)", "Carpenter v. United States (2018)"],
+    ans: 1,
+    exp: "Katz v. United States (1967) transformed Fourth Amendment law by shifting analysis from physical trespass to privacy expectations."
+  },
+  {
+    q: "In Riley v. California (2014), the Supreme Court ruled that police generally need a warrant to search what?",
+    opts: ["A suspect's home after arrest", "A vehicle during a traffic stop", "A cell phone incident to arrest", "A public place"],
+    ans: 2,
+    exp: "Riley held that cell phones contain vast personal information and generally require a warrant before their contents can be examined, even after an arrest."
+  },
+  {
+    q: "What did Carpenter v. United States (2018) rule about cell-site location information (CSLI)?",
+    opts: ["CSLI is not protected by the Fourth Amendment", "Obtaining CSLI without a warrant violates the Fourth Amendment", "The third-party doctrine fully applies to all CSLI", "Only real-time CSLI requires a warrant"],
+    ans: 1,
+    exp: "Carpenter held that long-term location tracking through CSLI constitutes a Fourth Amendment search requiring probable cause, limiting the third-party doctrine."
+  },
+  {
+    q: "United States v. Jones (2012) found a Fourth Amendment violation when police secretly installed what on a suspect's vehicle?",
+    opts: ["A wiretap on a phone", "A GPS tracker", "A keylogger", "A hidden camera"],
+    ans: 1,
+    exp: "Jones involved police secretly attaching a GPS tracker to a vehicle without a valid warrant. The Court ruled this was a Fourth Amendment search due to physical trespass."
+  },
+  {
+    q: "In United States v. McCall, why did the Eleventh Circuit NOT suppress the iCloud evidence despite a potentially overbroad warrant?",
+    opts: ["The search was perfectly particularized", "Officers acted in objective good faith and cloud search law remains unsettled", "The defendant consented to the search", "The warrant was issued by a federal judge"],
+    ans: 1,
+    exp: "The good-faith exception applied because officers reasonably relied on the warrant, sought supervisor and legal counsel review, and the law governing cloud searches remains unsettled."
+  },
+  {
+    q: "The Fruit of the Poisonous Tree doctrine means:",
+    opts: ["Only the directly obtained illegal evidence is excluded", "Evidence derived from an unconstitutional search is also inadmissible", "Officers can use illegally obtained evidence if they act in good faith", "Digital evidence is always excluded from court"],
+    ans: 1,
+    exp: "Fruit of the Poisonous Tree: not only is illegally obtained evidence inadmissible — any evidence derived from that initial violation is also inadmissible."
+  },
+
+  // — Additional: Amendments 1–5 and 14 (6 questions) —
+  {
+    q: "Which amendment protects against self-incrimination in criminal proceedings?",
+    opts: ["1st Amendment", "2nd Amendment", "4th Amendment", "5th Amendment"],
+    ans: 3,
+    exp: "The 5th Amendment (1791) establishes rights in criminal prosecutions, including due process and protection against self-incrimination."
+  },
+  {
+    q: "A person is compelled to testify against themselves in a criminal trial. Which amendment is violated?",
+    opts: ["1st Amendment", "3rd Amendment", "5th Amendment", "14th Amendment"],
+    ans: 2,
+    exp: "The 5th Amendment protects against self-incrimination — no person shall be compelled to be a witness against themselves in a criminal case."
+  },
+  {
+    q: "Which amendment prohibits the government from forcing a homeowner to house soldiers in peacetime?",
+    opts: ["1st Amendment", "2nd Amendment", "3rd Amendment", "4th Amendment"],
+    ans: 2,
+    exp: "The 3rd Amendment (1791) prohibits the forced quartering of soldiers in private homes during peacetime."
+  },
+  {
+    q: "The 1st Amendment protects which combination of rights?",
+    opts: ["Speech and the right to bear arms", "Religion, speech, press, assembly, and petition", "Due process and equal protection", "Privacy and unreasonable searches"],
+    ans: 1,
+    exp: "The 1st Amendment (1791) protects the freedoms of religion, speech, press, assembly, and petition."
+  },
+  {
+    q: "True or False: The 14th Amendment's equal protection clause applies only to the federal government.",
+    opts: ["True", "False"],
+    ans: 1,
+    exp: "False. The 14th Amendment applies to state governments — it prohibits states from denying citizens equal protection and due process. The 5th Amendment applies similar due process protections against the federal government."
+  },
+  {
+    q: "Which amendment defines citizenship and guarantees equal protection under the law?",
+    opts: ["1st Amendment", "4th Amendment", "5th Amendment", "14th Amendment"],
+    ans: 3,
+    exp: "The 14th Amendment (1868) defines citizenship and guarantees equal protection and due process under the law, applying these protections against state governments."
+  },
+
+  // — Additional: Federal Laws (6 questions) —
+  {
+    q: "Which law requires operators of websites directed at children under 13 to obtain verifiable parental consent?",
+    opts: ["HIPAA", "GLBA", "COPPA", "DMCA"],
+    ans: 2,
+    exp: "COPPA (Children's Online Privacy Protection Act, 1998) protects the privacy of children under 13 online and requires parental consent before collecting their personal data."
+  },
+  {
+    q: "HIPAA fines can reach up to how much per violation category per year?",
+    opts: ["$43,280", "$100,000", "$1.5 million", "$10,000"],
+    ans: 2,
+    exp: "HIPAA penalties can reach up to $1.5 million per violation category per year."
+  },
+  {
+    q: "True or False: CISA imposes direct financial penalties on companies that fail to share cybersecurity threat information.",
+    opts: ["True", "False"],
+    ans: 1,
+    exp: "False. CISA has no direct penalties — it encourages voluntary sharing. However, failure to share can increase a company's vulnerability to cyber threats."
+  },
+  {
+    q: "Which federal law imposes fines up to $100,000 per violation on financial institutions that fail to protect customer data?",
+    opts: ["HIPAA", "COPPA", "GLBA", "CFAA"],
+    ans: 2,
+    exp: "GLBA (Gramm-Leach-Bliley Act, 1999) protects financial institution customer data and carries fines up to $100,000 per violation for institutions."
+  },
+  {
+    q: "CISA (Cybersecurity Information Sharing Act) was enacted in which year?",
+    opts: ["1986", "2002", "2015", "1998"],
+    ans: 2,
+    exp: "CISA was enacted in 2015 to facilitate sharing of cybersecurity threat information between the federal government and private sector."
+  },
+  {
+    q: "Which federal law was enacted first?",
+    opts: ["HIPAA (1996)", "CFAA (1986)", "COPPA (1998)", "FISMA (2002)"],
+    ans: 1,
+    exp: "The CFAA (Computer Fraud and Abuse Act) was enacted in 1986, making it the oldest of these four federal cybersecurity laws."
+  },
+
+  // — Additional: Ethics (8 questions) —
+  {
+    q: "Which ethical framework would support a company prioritizing security updates that protect millions of users, even if it delays other development?",
+    opts: ["Deontology", "Justice Ethics", "Utilitarianism"],
+    ans: 2,
+    exp: "Utilitarianism supports actions that produce the greatest good for the greatest number. Protecting millions of users outweighs the inconvenience of delaying other projects."
+  },
+  {
+    q: "True or False: Under deontology, an action is ethical only if it follows moral rules and duties, regardless of whether it produces good outcomes.",
+    opts: ["True", "False"],
+    ans: 0,
+    exp: "True. Deontology holds that actions must conform to moral rules and duties — the rightness of an action is independent of its consequences."
+  },
+  {
+    q: "An engineering firm applies lower safety standards to infrastructure in a low-income neighborhood than in a wealthy one. Which ethical framework is most violated?",
+    opts: ["Deontology", "Justice Ethics", "Utilitarianism"],
+    ans: 1,
+    exp: "Justice Ethics — the firm is treating similarly situated communities unequally without valid justification, violating the principle of fairness and equitable treatment."
+  },
+  {
+    q: "Which ethical framework focuses on duties, rules, rights, and obligations rather than outcomes?",
+    opts: ["Deontology", "Justice Ethics", "Utilitarianism"],
+    ans: 0,
+    exp: "Deontology (duty-based ethics) holds that actions are ethical if they conform to moral rules and professional obligations, regardless of the results they produce."
+  },
+  {
+    q: "A city deploys an AI-driven traffic system that slightly inconveniences drivers but significantly reduces accidents and fatalities. Which ethical framework best supports this decision?",
+    opts: ["Deontology", "Justice Ethics", "Utilitarianism"],
+    ans: 2,
+    exp: "Utilitarianism — the decision produces the greatest overall good (fewer fatalities) for the greatest number, even though some individuals are slightly inconvenienced."
+  },
+  {
+    q: "True or False: Justice Ethics and Utilitarianism ask the same key question.",
+    opts: ["True", "False"],
+    ans: 1,
+    exp: "False. Justice Ethics asks 'Is this fair to everyone affected?' while Utilitarianism asks 'Which option produces the best overall consequences?' They are distinct frameworks."
+  },
+  {
+    q: "A data scientist reports manipulated test results rather than allowing flawed findings to be published. Which ethical framework best describes this?",
+    opts: ["Deontology", "Justice Ethics", "Utilitarianism"],
+    ans: 0,
+    exp: "Deontology — the scientist is following a professional duty to report truthfully, regardless of consequences to the project or their career."
+  },
+  {
+    q: "What is the key limitation of Utilitarianism?",
+    opts: ["It is too rigid and never accounts for context", "It can justify harm to minorities or individuals if the overall outcome benefits the majority", "It focuses only on rules and ignores real-world consequences", "It requires all decisions to be approved by a neutral party"],
+    ans: 1,
+    exp: "Utilitarianism's key limitation is that it can justify harm to individuals or minority groups if the action maximizes benefit for the majority. Outcomes are also often difficult to measure accurately."
+  },
+
+  // — Additional: 4th Amendment & Warrant Exceptions (4 questions) —
+  {
+    q: "True or False: The Fourth Amendment applies to searches conducted entirely by private individuals with no government involvement.",
+    opts: ["True", "False"],
+    ans: 1,
+    exp: "False. The Fourth Amendment only applies to government conduct. If the action is purely private and not directed by the government, the Fourth Amendment does not apply."
+  },
+  {
+    q: "Under the automobile exception, what does law enforcement need to search a vehicle without a warrant?",
+    opts: ["Consent from the driver", "Probable cause to believe the vehicle contains evidence of a crime", "A court order", "Reasonable suspicion only"],
+    ans: 1,
+    exp: "The automobile exception allows warrantless searches of vehicles when law enforcement has probable cause to believe the vehicle contains evidence of a crime, justified by the vehicle's mobility."
+  },
+  {
+    q: "Which step in the Fourth Amendment analytical framework asks whether the warrant was too broad or resembled a general search?",
+    opts: ["Step 2: Search or Seizure", "Step 3: Warrant Required", "Step 5: Particularity and Scope", "Step 6: Suppression or Good Faith"],
+    ans: 2,
+    exp: "Step 5 evaluates particularity and scope — whether the warrant was limited by time, subject matter, or data type, and whether officers searched beyond what the warrant allowed."
+  },
+  {
+    q: "True or False: Under the good-faith exception, evidence will always be admitted even if the warrant was constitutionally defective.",
+    opts: ["True", "False"],
+    ans: 1,
+    exp: "False. The good-faith exception applies only when officers reasonably relied on the warrant. Evidence will still be suppressed if reliance on the warrant was objectively unreasonable — for example, if the warrant was so lacking in probable cause that no reasonable officer could rely on it."
+  },
+];
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let cards = [...CARDS];
+let cardIdx = 0;
+let activeCat = "All";
+let quizList = [];
+let qIdx = 0;
+let score = 0;
+let answered = false;
+
+// Init counts
+document.getElementById('stat-cards').textContent = CARDS.length;
+document.getElementById('stat-quiz').textContent = QUIZ.length;
+
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+function showHome() {
+  document.getElementById('home').style.display = 'flex';
+  document.getElementById('fc-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+}
+
+// ─────────────────────────────────────────
+// FLASHCARDS
+// ─────────────────────────────────────────
+function startFlashcards() {
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('fc-screen').style.display = 'block';
+  activeCat = 'All';
+  buildCatStrip();
+  filterCards('All');
+}
+
+function buildCatStrip() {
+  const cats = ['All', ...new Set(CARDS.map(c => c.cat))];
+  document.getElementById('cat-strip').innerHTML = cats.map(c =>
+    `<button class="cat-btn${c === activeCat ? ' active' : ''}" onclick="filterCards('${c}')">${c}</button>`
+  ).join('');
+}
+
+function filterCards(cat) {
+  activeCat = cat;
+  cards = cat === 'All' ? [...CARDS] : CARDS.filter(c => c.cat === cat);
+  cardIdx = 0;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.textContent === cat));
+  renderCard();
+}
+
+function renderCard() {
+  const c = cards[cardIdx];
+  document.getElementById('card-counter').textContent = `${cardIdx + 1} / ${cards.length}`;
+  document.getElementById('fc-tag-f').textContent = c.cat;
+  document.getElementById('fc-tag-b').textContent = c.cat;
+  document.getElementById('fc-front-text').textContent = c.front;
+  document.getElementById('fc-back-text').textContent = c.back;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('prev-btn').disabled = cardIdx === 0;
+  document.getElementById('next-btn').disabled = cardIdx === cards.length - 1;
+}
+
+function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+
+function nextCard() { if (cardIdx < cards.length - 1) { cardIdx++; renderCard(); } }
+function prevCard() { if (cardIdx > 0) { cardIdx--; renderCard(); } }
+
+function shuffleCards() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  cardIdx = 0;
+  renderCard();
+}
+
+// ─────────────────────────────────────────
+// QUIZ
+// ─────────────────────────────────────────
+function startQuiz() {
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  quizList = [...QUIZ].sort(() => Math.random() - 0.5);
+  qIdx = 0; score = 0;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const q = quizList[qIdx];
+  const total = quizList.length;
+  document.getElementById('prog-fill').style.width = `${(qIdx / total) * 100}%`;
+  document.getElementById('q-label').textContent = `Question ${qIdx + 1} of ${total}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-score').textContent = `Score: ${score} / ${qIdx}`;
+  document.getElementById('next-btn-q').style.display = 'none';
+  document.getElementById('explanation').className = 'explanation';
+  document.getElementById('options').innerHTML = q.opts.map((o, i) =>
+    `<button class="opt" onclick="selectAnswer(${i})">${o}</button>`
+  ).join('');
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = quizList[qIdx];
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach(o => o.classList.add('locked'));
+  opts[q.ans].classList.add('correct');
+  if (idx === q.ans) score++;
+  else opts[idx].classList.add('wrong');
+  document.getElementById('q-score').textContent = `Score: ${score} / ${qIdx + 1}`;
+  const exp = document.getElementById('explanation');
+  exp.textContent = q.exp;
+  exp.classList.add('show');
+  document.getElementById('next-btn-q').style.display = 'block';
+}
+
+function nextQuestion() {
+  qIdx++;
+  if (qIdx >= quizList.length) showResults();
+  else renderQuestion();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('results').style.display = 'flex';
+  const total = quizList.length;
+  const pct = Math.round((score / total) * 100);
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-frac').textContent = `${score} / ${total}`;
+  const titles = pct >= 90 ? ["Excellent!", "You're ready for the midterm."]
+               : pct >= 75 ? ["Good Job!", "Review the ones you missed and you'll be set."]
+               : pct >= 60 ? ["Keep Studying", "Go over the flashcards for the topics you missed."]
+               :             ["Needs More Work", "Hit the flashcards, then try the quiz again — you've got this."];
+  document.getElementById('result-title').textContent = titles[0];
+  document.getElementById('result-msg').textContent = titles[1];
+}
+</script>
+</body>
+</html>

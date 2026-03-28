@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listing Description Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:        #13202f;
+      --navy-mid:    #1e3148;
+      --navy-light:  #2c4a6e;
+      --gold:        #c9a55a;
+      --gold-light:  #e8c97a;
+      --gold-pale:   #fdf6e7;
+      --gold-ghost:  #fefbf3;
+      --cream:       #f9f7f4;
+      --cream-2:     #f3f0ea;
+      --cream-3:     #ece8e0;
+      --surface:     #ffffff;
+      --border:      #e4dfd6;
+      --border-mid:  #d4cec4;
+      --text:        #1a1a18;
+      --text-mid:    #3a3832;
+      --text-muted:  #706c64;
+      --text-subtle: #9e9a92;
+      --green:       #2a7a4a;
+      --green-pale:  #e2f2e8;
+      --blue:        #1e5ba8;
+      --blue-pale:   #ddeaf8;
+      --violet:      #5e3e9e;
+      --violet-pale: #ece6f8;
+      --rose:        #c0392b;
+      --rose-pale:   #fce8e6;
+      --shadow-sm:   0 1px 3px rgba(19,32,47,.07);
+      --shadow:      0 2px 10px rgba(19,32,47,.09);
+      --shadow-md:   0 6px 28px rgba(19,32,47,.12);
+      --shadow-glow: 0 4px 20px rgba(201,165,90,.22);
+      --radius:      12px;
+      --radius-sm:   7px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    .header {
+      background: var(--navy);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-mark {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--gold), #b8902a);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      box-shadow: var(--shadow-glow);
+    }
+    .brand-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.01em;
+    }
+    .brand-name span { color: var(--gold-light); }
+    .header-tag {
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── LAYOUT ─────────────────────────────────────── */
+    .workspace {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 32px 28px 80px;
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── LEFT COLUMN ────────────────────────────────── */
+    .left-col { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 16px; }
+
+    /* ── CARDS ──────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .card-head {
+      padding: 13px 18px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(to right, var(--cream), var(--surface));
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .ch-icon { font-size: 15px; }
+    .ch-label {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+    }
+    .card-body { padding: 18px; }
+
+    /* ── TONE SELECTOR ──────────────────────────────── */
+    .tone-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .tone-btn {
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s;
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      user-select: none;
+    }
+    .tone-btn:hover { border-color: var(--gold); background: var(--gold-ghost); }
+    .tone-emoji { font-size: 20px; line-height: 1; }
+    .tone-name  { font-size: 12px; font-weight: 700; color: var(--text-mid); letter-spacing: 0.02em; }
+    .tone-sub   { font-size: 10.5px; color: var(--text-subtle); }
+
+    .tone-btn.sel-luxury      { border-color: var(--gold);   background: var(--gold-pale);   }
+    .tone-btn.sel-family      { border-color: var(--green);  background: var(--green-pale);  }
+    .tone-btn.sel-investment  { border-color: var(--blue);   background: var(--blue-pale);   }
+    .tone-btn.sel-firstbuyer  { border-color: var(--violet); background: var(--violet-pale); }
+
+    .tone-btn.sel-luxury      .tone-name { color: var(--gold);   }
+    .tone-btn.sel-family      .tone-name { color: var(--green);  }
+    .tone-btn.sel-investment  .tone-name { color: var(--blue);   }
+    .tone-btn.sel-firstbuyer  .tone-name { color: var(--violet); }
+
+    /* ── FORM FIELDS ────────────────────────────────── */
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field.wide { grid-column: 1 / -1; }
+
+    label.fl {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+    label.fl .req { color: var(--rose); }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      color: var(--text);
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 11px;
+      width: 100%;
+      outline: none;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+      -webkit-appearance: none;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(201,165,90,.14);
+      background: #fff;
+    }
+    textarea { resize: vertical; min-height: 82px; line-height: 1.6; }
+    ::placeholder { color: #cbc6bc; }
+
+    /* Price input with $ prefix */
+    .price-wrap { position: relative; }
+    .price-wrap input { padding-left: 24px; }
+    .price-prefix {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+      pointer-events: none;
+    }
+
+    /* API key row */
+    .api-strip {
+      background: var(--cream-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 11px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .api-strip label { white-space: nowrap; margin: 0; }
+    .api-input-wrap { flex: 1; position: relative; }
+    .api-input-wrap input { background: var(--surface); margin: 0; }
+    .key-eye {
+      position: absolute; right: 9px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: var(--text-subtle); display: flex; padding: 2px;
+      transition: color .15s;
+    }
+    .key-eye:hover { color: var(--text-muted); }
+
+    /* Generate button */
+    .btn-generate {
+      font-family: 'Inter', sans-serif;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--navy);
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 13px 24px;
+      width: 100%;
+      cursor: pointer;
+      transition: all .2s;
+      box-shadow: var(--shadow-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      letter-spacing: 0.01em;
+    }
+    .btn-generate:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--gold), #a8852a);
+      box-shadow: 0 6px 24px rgba(201,165,90,.38);
+      transform: translateY(-1px);
+    }
+    .btn-generate:active:not(:disabled) { transform: none; }
+    .btn-generate:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+    .gen-spinner {
+      width: 15px; height: 15px;
+      border: 2.5px solid rgba(19,32,47,.2);
+      border-top-color: var(--navy);
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RIGHT COLUMN ───────────────────────────────── */
+    .right-col { min-width: 0; }
+
+    /* Empty state */
+    .empty-state {
+      background: var(--surface);
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 64px 32px;
+      text-align: center;
+    }
+    .es-house { font-size: 3rem; margin-bottom: 16px; opacity: .35; }
+    .empty-state h3 { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--text-mid); margin-bottom: 8px; }
+    .empty-state p  { font-size: 13px; color: var(--text-muted); line-height: 1.7; max-width: 320px; margin: 0 auto; }
+
+    /* Output area */
+    .output-area { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Output header */
+    .output-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .output-meta-left h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 21px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .output-meta-left .om-sub {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .version-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--navy);
+      color: var(--gold-light);
+    }
+    .tone-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 11px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .tp-luxury     { background: var(--gold-pale);   color: #8a6520; border: 1px solid #e8d49a; }
+    .tp-family     { background: var(--green-pale);  color: var(--green);  border: 1px solid #b4dfc2; }
+    .tp-investment { background: var(--blue-pale);   color: var(--blue);   border: 1px solid #a8c8f0; }
+    .tp-firstbuyer { background: var(--violet-pale); color: var(--violet); border: 1px solid #c0aaf0; }
+
+    /* Output cards */
+    .out-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: fadeUp .35s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .out-card.refreshing { animation: pulse .5s ease; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .4; }
+    }
+
+    .oc-head {
+      padding: 13px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .oc-head-left { display: flex; align-items: center; gap: 10px; }
+    .oc-icon {
+      width: 30px; height: 30px;
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .oc-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+    }
+    .oc-head-right { display: flex; align-items: center; gap: 8px; }
+
+    /* Stats bar */
+    .stats-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 18px;
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+    }
+    .stat-label { color: var(--text-subtle); font-weight: 500; }
+    .stat-val   { color: var(--text-mid); font-weight: 700; }
+    .stat-target { color: var(--text-subtle); }
+    .stat-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border-mid); }
+
+    /* Word count indicator */
+    .wc-bar-wrap {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      max-width: 80px;
+    }
+    .wc-bar {
+      height: 100%;
+      border-radius: 2px;
+      transition: width .4s ease, background .4s;
+      background: var(--gold);
+    }
+    .wc-bar.good  { background: var(--green); }
+    .wc-bar.over  { background: var(--rose); }
+
+    /* Char limit ring for social */
+    .char-ring-wrap { display: flex; align-items: center; gap: 6px; }
+    .char-ring {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Output text body */
+    .oc-body {
+      padding: 20px 22px;
+    }
+    .oc-text {
+      font-size: 14.5px;
+      line-height: 1.85;
+      color: var(--text-mid);
+      font-family: 'Inter', sans-serif;
+      white-space: pre-wrap;
+    }
+    .oc-text.mls   { font-size: 14.5px; }
+    .oc-text.social {
+      font-size: 14px;
+      line-height: 1.75;
+      color: var(--text);
+    }
+
+    /* MLS card accent */
+    .out-card.mls-card   { border-top: 3px solid var(--navy); }
+    .out-card.social-card { border-top: 3px solid var(--gold); }
+
+    /* Copy button */
+    .btn-copy {
+      font-family: 'Inter', sans-serif;
+      font-size: 11.5px;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 6px 13px;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1.5px solid;
+      background: transparent;
+      flex-shrink: 0;
+      letter-spacing: 0.02em;
+    }
+    .btn-copy.navy { color: var(--navy); border-color: var(--border-mid); }
+    .btn-copy.navy:hover { background: var(--cream-2); border-color: var(--navy); }
+    .btn-copy.gold { color: #8a6520; border-color: #e0c87a; background: var(--gold-ghost); }
+    .btn-copy.gold:hover { background: var(--gold-pale); border-color: var(--gold); }
+    .btn-copy.copied { color: var(--green); border-color: #86efac; background: #f0fdf4 !important; }
+
+    /* Retry button */
+    .btn-retry {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all .15s;
+    }
+    .btn-retry:hover { border-color: var(--gold); color: var(--text); background: var(--gold-ghost); }
+    .btn-retry:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Error */
+    .error-bar {
+      background: var(--rose-pale);
+      border: 1px solid #f5b8b2;
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      font-size: 13px;
+      color: #7f1d1d;
+    }
+
+    /* ── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 820px) {
+      .workspace { grid-template-columns: 1fr; }
+      .left-col  { position: static; }
+      .header    { padding: 0 16px; }
+      .workspace { padding: 20px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────── -->
+<header class="header">
+  <div class="brand">
+    <div class="brand-mark">🏛️</div>
+    <span class="brand-name">Prestige<span>Listings</span></span>
+  </div>
+  <span class="header-tag">AI Listing Generator</span>
+</header>
+
+<!-- ── WORKSPACE ───────────────────────────────────── -->
+<div class="workspace">
+
+  <!-- ════ LEFT — FORM ════ -->
+  <div class="left-col">
+
+    <!-- Tone Selector -->
+    <div class="card">
+      <div class="card-head">
+        <span class="ch-icon">🎨</span>
+        <span class="ch-label">Listing Tone</span>
+      </div>
+      <div class="card-body">
+        <div class="tone-grid" id="tone-grid">
+          <div class="tone-btn sel-luxury" data-tone="luxury" onclick="selectTone(this)">
+            <span class="tone-emoji">💎</span>
+            <span class="tone-name">Luxury</span>
+            <span class="tone-sub">Aspirational &amp; exclusive</span>
+          </div>
+          <div class="tone-btn" data-tone="family" onclick="selectTone(this)">
+            <span class="tone-emoji">🏡</span>
+            <span class="tone-name">Family-Friendly</span>
+            <span class="tone-sub">Warm &amp; community-first</span>
+          </div>
+          <div class="tone-btn" data-tone="investment" onclick="selectTone(this)">
+            <span class="tone-emoji">📈</span>
+            <span class="tone-name">Investment</span>
+            <span class="tone-sub">ROI &amp; income-focused</span>
+          </div>
+          <div class="tone-btn" data-tone="firstbuyer" onclick="selectTone(this)">
+            <span class="tone-emoji">🔑</span>
+            <span class="tone-name">First-Time Buyer</span>
+            <span class="tone-sub">Accessible &amp; encouraging</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property Details -->
+    <div class="card">
+      <div class="card-head">
+        <span class="ch-icon">🏠</span>
+        <span class="ch-label">Property Details</span>
+      </div>
+      <div class="card-body">
+        <div class="fields-grid">
+          <div class="field">
+            <label class="fl" for="beds">Beds <span class="req">*</span></label>
+            <input type="number" id="beds" placeholder="4" min="0">
+          </div>
+          <div class="field">
+            <label class="fl" for="baths">Baths <span class="req">*</span></label>
+            <input type="number" id="baths" placeholder="2.5" min="0" step="0.5">
+          </div>
+          <div class="field">
+            <label class="fl" for="sqft">Sq Ft <span class="req">*</span></label>
+            <input type="number" id="sqft" placeholder="2400" min="1">
+          </div>
+          <div class="field wide">
+            <label class="fl" for="neighborhood">Neighborhood / City <span class="req">*</span></label>
+            <input type="text" id="neighborhood" placeholder="e.g. Pacific Heights, San Francisco">
+          </div>
+          <div class="field wide">
+            <label class="fl" for="price">Listing Price <span class="req">*</span></label>
+            <div class="price-wrap">
+              <span class="price-prefix">$</span>
+              <input type="text" id="price" placeholder="1,250,000">
+            </div>
+          </div>
+          <div class="field wide">
+            <label class="fl" for="features">Top 5 Property Features <span class="req">*</span></label>
+            <textarea id="features" placeholder="e.g.&#10;- Chef's kitchen with Calacatta marble countertops&#10;- Primary suite with spa bath and city views&#10;- Heated three-car garage&#10;- Newly refinished hardwood floors throughout&#10;- Smart home system with Lutron lighting"></textarea>
+          </div>
+          <div class="field wide">
+            <label class="fl" for="agent-notes">Agent Notes</label>
+            <textarea id="agent-notes" style="min-height:68px;" placeholder="Optional: recent renovations, HOA details, school district, unique selling points, seller motivations…"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Key -->
+    <div class="api-strip">
+      <label class="fl">API Key</label>
+      <div class="api-input-wrap">
+        <input type="password" id="api-key" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+        <button class="key-eye" onclick="toggleKey()" tabindex="-1">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Generate Button -->
+    <button class="btn-generate" id="gen-btn" onclick="generate()">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      Generate Listing Descriptions
+    </button>
+
+    <div id="form-error"></div>
+
+  </div><!-- /left-col -->
+
+  <!-- ════ RIGHT — OUTPUT ════ -->
+  <div class="right-col" id="right-col">
+    <div class="empty-state">
+      <div class="es-house">🏛️</div>
+      <h3>Your listing copy will appear here</h3>
+      <p>Fill in the property details, choose your tone, and generate a polished MLS description and social caption in seconds.</p>
+    </div>
+  </div>
+
+</div><!-- /workspace -->
+
+<script>
+  // ── State ──────────────────────────────────────────────
+  let selectedTone = 'luxury';
+  let lastFormData = null;
+  let versionNum   = 0;
+
+  // ── API key persistence ────────────────────────────────
+  const keyEl = document.getElementById('api-key');
+  const saved = localStorage.getItem('anthropic_key_listing');
+  if (saved) keyEl.value = saved;
+  keyEl.addEventListener('input', () => localStorage.setItem('anthropic_key_listing', keyEl.value.trim()));
+
+  function toggleKey() { keyEl.type = keyEl.type === 'password' ? 'text' : 'password'; }
+
+  // ── Tone selection ─────────────────────────────────────
+  function selectTone(btn) {
+    document.querySelectorAll('.tone-btn').forEach(b => {
+      b.className = 'tone-btn';
+    });
+    const tone = btn.dataset.tone;
+    btn.classList.add(`sel-${tone}`);
+    selectedTone = tone;
+  }
+
+  const TONE_LABELS = {
+    luxury:     { name: 'Luxury',           pill: 'tp-luxury'     },
+    family:     { name: 'Family-Friendly',  pill: 'tp-family'     },
+    investment: { name: 'Investment',       pill: 'tp-investment'  },
+    firstbuyer: { name: 'First-Time Buyer', pill: 'tp-firstbuyer'  },
+  };
+
+  // ── Collect + validate ─────────────────────────────────
+  function collectForm() {
+    return {
+      beds:         document.getElementById('beds').value.trim(),
+      baths:        document.getElementById('baths').value.trim(),
+      sqft:         document.getElementById('sqft').value.trim(),
+      neighborhood: document.getElementById('neighborhood').value.trim(),
+      price:        document.getElementById('price').value.trim(),
+      features:     document.getElementById('features').value.trim(),
+      agentNotes:   document.getElementById('agent-notes').value.trim(),
+      tone:         selectedTone,
+    };
+  }
+
+  function validate(d) {
+    if (!keyEl.value.trim()) return 'Please enter your Anthropic API key above.';
+    if (!d.beds)         return 'Bedrooms is required.';
+    if (!d.baths)        return 'Bathrooms is required.';
+    if (!d.sqft)         return 'Square Footage is required.';
+    if (!d.neighborhood) return 'Neighborhood is required.';
+    if (!d.price)        return 'Listing Price is required.';
+    if (!d.features)     return 'Please enter at least one property feature.';
+    return null;
+  }
+
+  // ── Generate ───────────────────────────────────────────
+  async function generate(isRetry = false) {
+    const d = isRetry ? lastFormData : collectForm();
+    const errEl = document.getElementById('form-error');
+
+    if (!isRetry) {
+      const err = validate(d);
+      if (err) {
+        errEl.innerHTML = `<div class="error-bar" style="margin-top:12px;"><span>⚠️</span>${escHtml(err)}</div>`;
+        return;
+      }
+      errEl.innerHTML = '';
+      lastFormData = d;
+    }
+
+    setLoading(true, isRetry);
+
+    try {
+      const result = await callClaude(d);
+      versionNum++;
+      renderOutput(d, result);
+    } catch (e) {
+      const targetEl = isRetry ? document.getElementById('right-col') : errEl;
+      targetEl.innerHTML += `<div class="error-bar" style="margin-top:12px;"><span>⚠️</span><strong>Error:</strong> ${escHtml(e.message)}</div>`;
+    } finally {
+      setLoading(false, isRetry);
+    }
+  }
+
+  // ── Claude API ─────────────────────────────────────────
+  const TONE_INSTRUCTIONS = {
+    luxury: `Write in a sophisticated, aspirational tone suited for high-net-worth buyers. Use elevated vocabulary — words like "curated," "bespoke," "resort-inspired," "coveted," "unrivalled." Evoke lifestyle, exclusivity, and prestige. Avoid clichés. The MLS description should feel like it belongs in an Architectural Digest feature. The social caption should be sleek and aspirational, use 1–2 tasteful emojis, and end with relevant luxury hashtags like #LuxuryRealEstate #DreamHome.`,
+    family: `Write in a warm, welcoming tone focused on livability, community, and family life. Highlight practical benefits — proximity to top schools, parks, safe streets, space for growing families, entertaining. Use inclusive, approachable language. The social caption should feel joyful and community-minded, use 2–3 friendly emojis, and end with hashtags like #FamilyHome #NewHome #HomeSweetHome.`,
+    investment: `Write for investors and landlords. Focus on income potential, cap rates, rental demand, location fundamentals, value-add opportunities, and appreciation trajectory. Use direct, numbers-oriented language. Mention yield, cash flow, or rental comp language where appropriate. The social caption should be concise and ROI-focused, use 1–2 chart/money emojis, and end with hashtags like #InvestmentProperty #RealEstateInvesting #PassiveIncome.`,
+    firstbuyer: `Write in an encouraging, accessible tone for first-time buyers who may feel intimidated. Highlight move-in readiness, low-maintenance features, value for money, and proximity to everyday amenities (grocery, transit, cafes). Make the buyer feel capable and excited. Avoid jargon. The social caption should be enthusiastic and approachable, use 2–3 uplifting emojis, and end with hashtags like #FirstHome #StarterHome #HomeOwnership.`,
+  };
+
+  async function callClaude(d) {
+    const notesStr = d.agentNotes ? `\nAgent notes: ${d.agentNotes}` : '';
+    const userMsg  = `
+Beds: ${d.beds}
+Baths: ${d.baths}
+Sq Ft: ${d.sqft}
+Neighborhood: ${d.neighborhood}
+Listing Price: $${d.price}
+Top Features:
+${d.features}${notesStr}
+    `.trim();
+
+    const system = `You are a top-producing real estate copywriter with 20 years of experience writing MLS descriptions and social media content for listings across all price points and property types.
+
+Tone guidance for this listing:
+${TONE_INSTRUCTIONS[d.tone]}
+
+Based on the property details provided, generate exactly two pieces of copy and return them as a JSON object with these keys:
+
+"mls_description"
+  A professional MLS-style property description. Target length: 140–160 words. It must:
+  - Open with a compelling hook that establishes the tone immediately (not "Welcome to…" or "Don't miss…")
+  - Weave in the specific features naturally — do not just list them
+  - Include the neighborhood, price context if relevant, bed/bath/sqft in a natural way
+  - End with a clear call to action appropriate to the tone
+  - Never use exclamation marks more than once
+  - Never use the word "nestled"
+
+"social_caption"
+  A punchy Instagram/Facebook caption. Target: 45–60 words. Must:
+  - Open with a strong first line (the hook that stops the scroll)
+  - Flow naturally into 2–3 key selling points
+  - End with 4–6 relevant hashtags on a new line
+  - Feel native to social media, not like a shrunken MLS description
+
+Return ONLY valid JSON. No markdown fences, no explanation.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':     'application/json',
+        'x-api-key':        keyEl.value.trim(),
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model:      'claude-opus-4-6',
+        max_tokens: 1500,
+        system,
+        messages: [{ role: 'user', content: userMsg }],
+      }),
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e?.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data  = await res.json();
+    const raw   = data?.content?.[0]?.text ?? '';
+    const clean = raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
+    try { return JSON.parse(clean); }
+    catch(_) { throw new Error('Could not parse response. Raw:\n' + raw); }
+  }
+
+  // ── Render ─────────────────────────────────────────────
+  function renderOutput(d, r) {
+    const col      = document.getElementById('right-col');
+    const toneInfo = TONE_LABELS[d.tone];
+    const mls      = (r.mls_description || '').trim();
+    const social   = (r.social_caption  || '').trim();
+    const mlsWords = countWords(mls);
+    const mlsChars = mls.length;
+    const socChars = social.length;
+    const socWords = countWords(social);
+
+    // Word count bar for MLS (target 150 words)
+    const mlsPct    = Math.min((mlsWords / 160) * 100, 100);
+    const mlsBarCls = mlsWords < 120 ? '' : mlsWords <= 165 ? 'good' : 'over';
+
+    // Char % for social (Instagram 2200 limit — we care about first ~50 words for feed)
+    const socPct = Math.min((socChars / 280) * 100, 100);
+    const socRingColor = socChars > 280 ? '#c0392b' : socChars > 200 ? '#d97706' : '#2a7a4a';
+
+    col.innerHTML = `
+      <div class="output-area">
+        <div class="output-meta">
+          <div class="output-meta-left">
+            <h2>${escHtml(d.neighborhood)}</h2>
+            <div class="om-sub">${escHtml(d.beds)} bed · ${escHtml(d.baths)} bath · ${Number(d.sqft).toLocaleString()} sq ft · <strong>$${escHtml(d.price)}</strong></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <span class="tone-pill ${toneInfo.pill}">${escHtml(toneInfo.name)}</span>
+            <span class="version-tag">v${versionNum}</span>
+          </div>
+        </div>
+
+        <!-- MLS Card -->
+        <div class="out-card mls-card" id="mls-card">
+          <div class="oc-head">
+            <div class="oc-head-left">
+              <div class="oc-icon" style="background:#eef2fa;">📄</div>
+              <span class="oc-title">MLS Description</span>
+            </div>
+            <div class="oc-head-right">
+              <button class="btn-copy navy" onclick="copyText(this, ${JSON.stringify(mls)})">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                Copy
+              </button>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat-item">
+              <span class="stat-label">Words</span>
+              <span class="stat-val">${mlsWords}</span>
+              <span class="stat-target">/ ~150</span>
+            </div>
+            <div class="wc-bar-wrap"><div class="wc-bar ${mlsBarCls}" style="width:${mlsPct}%"></div></div>
+            <div class="stat-dot"></div>
+            <div class="stat-item">
+              <span class="stat-label">Chars</span>
+              <span class="stat-val">${mlsChars}</span>
+            </div>
+          </div>
+          <div class="oc-body">
+            <div class="oc-text mls">${escHtml(mls)}</div>
+          </div>
+        </div>
+
+        <!-- Social Card -->
+        <div class="out-card social-card" id="social-card" style="animation-delay:80ms;">
+          <div class="oc-head">
+            <div class="oc-head-left">
+              <div class="oc-icon" style="background:var(--gold-ghost);">📱</div>
+              <span class="oc-title">Social Media Caption</span>
+            </div>
+            <div class="oc-head-right">
+              <button class="btn-copy gold" onclick="copyText(this, ${JSON.stringify(social)})">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                Copy
+              </button>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat-item">
+              <span class="stat-label">Words</span>
+              <span class="stat-val">${socWords}</span>
+              <span class="stat-target">/ ~50</span>
+            </div>
+            <div class="stat-dot"></div>
+            <div class="stat-item">
+              <span class="stat-label">Characters</span>
+              <span class="stat-val" style="color:${socRingColor}">${socChars}</span>
+            </div>
+            <div class="char-ring-wrap">
+              <svg width="18" height="18" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e4dfd6" stroke-width="3.5"/>
+                <circle cx="18" cy="18" r="15.9" fill="none" stroke="${socRingColor}" stroke-width="3.5"
+                  stroke-dasharray="${(socPct * 100) / 100} 100"
+                  stroke-dashoffset="25" stroke-linecap="round"/>
+              </svg>
+            </div>
+          </div>
+          <div class="oc-body">
+            <div class="oc-text social">${escHtml(social)}</div>
+          </div>
+        </div>
+
+        <!-- Retry row -->
+        <div style="display:flex;justify-content:flex-end;">
+          <button class="btn-retry" id="retry-btn" onclick="generate(true)">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Try Another Version
+          </button>
+        </div>
+
+      </div><!-- /output-area -->
+    `;
+  }
+
+  // ── Loading ────────────────────────────────────────────
+  function setLoading(on, isRetry) {
+    const genBtn   = document.getElementById('gen-btn');
+    const retryBtn = document.getElementById('retry-btn');
+
+    if (on) {
+      genBtn.disabled = true;
+      genBtn.innerHTML = `<div class="gen-spinner"></div> Claude is writing…`;
+      if (retryBtn) retryBtn.disabled = true;
+      // Pulse existing cards if retrying
+      if (isRetry) {
+        document.querySelectorAll('.out-card').forEach(c => c.classList.add('refreshing'));
+      }
+    } else {
+      genBtn.disabled = false;
+      genBtn.innerHTML = `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Generate Listing Descriptions`;
+      if (retryBtn) retryBtn.disabled = false;
+    }
+  }
+
+  // ── Copy ───────────────────────────────────────────────
+  function copyText(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Copied!`;
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ── Utils ──────────────────────────────────────────────
+  function countWords(s) { return s ? s.trim().split(/\s+/).filter(Boolean).length : 0; }
+  function escHtml(s = '') {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

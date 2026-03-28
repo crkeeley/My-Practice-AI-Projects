@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CRM Note Formatter — Powered by Claude</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #f1f5f9;
+      --surface:      #ffffff;
+      --surface-2:    #f8fafc;
+      --border:       #e2e8f0;
+      --border-focus: #3b82f6;
+      --text-primary: #0f172a;
+      --text-mid:     #334155;
+      --text-muted:   #64748b;
+      --text-subtle:  #94a3b8;
+      --blue:         #3b82f6;
+      --blue-dark:    #2563eb;
+      --blue-light:   #eff6ff;
+      --blue-mid:     #dbeafe;
+      --radius:       10px;
+      --radius-sm:    7px;
+      --shadow:       0 1px 3px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.05);
+      --shadow-md:    0 4px 16px rgba(15,23,42,.10);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── TOP BAR ──────────────────────────────────────── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 1px 0 var(--border);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      color: white;
+    }
+    .brand-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .brand-sep { color: var(--border); font-size: 18px; font-weight: 300; }
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .api-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .api-label { font-size: 12px; color: var(--text-muted); }
+    .api-input {
+      width: 210px;
+      padding: 6px 11px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-mid);
+      background: var(--surface-2);
+      outline: none;
+      transition: border-color .2s;
+      letter-spacing: .05em;
+    }
+    .api-input:focus { border-color: var(--border-focus); }
+    .api-saved {
+      font-size: 11px;
+      color: #16a34a;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity .3s;
+    }
+    .api-saved.show { opacity: 1; }
+
+    /* ── LAYOUT ───────────────────────────────────────── */
+    .layout {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 28px 24px 72px;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── LEFT PANEL ───────────────────────────────────── */
+    .left-panel { display: flex; flex-direction: column; gap: 16px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+    .card-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+    }
+    .card-body { padding: 18px; }
+
+    .notes-textarea {
+      width: 100%;
+      min-height: 260px;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
+      background: var(--surface-2);
+      resize: vertical;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      line-height: 1.65;
+    }
+    .notes-textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.1);
+    }
+    .notes-textarea::placeholder { color: var(--text-subtle); }
+
+    .example-section {
+      margin-top: 12px;
+    }
+    .example-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-subtle);
+      margin-bottom: 7px;
+    }
+    .examples-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .ex-pill {
+      padding: 4px 10px;
+      background: var(--blue-light);
+      border: 1px solid var(--blue-mid);
+      border-radius: 20px;
+      font-size: 11.5px;
+      color: var(--blue-dark);
+      cursor: pointer;
+      transition: background .15s;
+      white-space: nowrap;
+    }
+    .ex-pill:hover { background: var(--blue-mid); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: white;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity .2s, transform .1s;
+      margin-top: 14px;
+    }
+    .btn-primary:hover:not(:disabled) { opacity: .9; }
+    .btn-primary:active:not(:disabled) { transform: scale(.99); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── RIGHT PANEL ──────────────────────────────────── */
+    .right-panel { display: flex; flex-direction: column; gap: 14px; }
+
+    /* top action bar */
+    .output-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px;
+    }
+    .output-heading {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .btn-copy-all {
+      padding: 8px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12.5px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-mid);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .15s, border-color .15s;
+      box-shadow: var(--shadow);
+    }
+    .btn-copy-all:hover:not(:disabled) {
+      background: var(--blue-light);
+      border-color: #93c5fd;
+      color: var(--blue-dark);
+    }
+    .btn-copy-all:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── OUTPUT CARDS ─────────────────────────────────── */
+    .out-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 700px) {
+      .out-grid { grid-template-columns: 1fr; }
+    }
+    .out-card-full { grid-column: 1 / -1; }
+
+    .out-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .out-card-head {
+      padding: 11px 16px;
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .out-card-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text-muted);
+    }
+    .out-card-actions { display: flex; align-items: center; gap: 6px; }
+    .btn-copy-field {
+      padding: 3px 9px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-subtle);
+      cursor: pointer;
+      transition: background .12s, color .12s, border-color .12s;
+    }
+    .btn-copy-field:hover {
+      background: var(--blue-light);
+      color: var(--blue-dark);
+      border-color: #93c5fd;
+    }
+    .out-card-body { padding: 14px 16px; }
+
+    /* skeleton placeholder */
+    .skeleton-lines { display: flex; flex-direction: column; gap: 8px; }
+    .skel {
+      height: 13px;
+      background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+      background-size: 200% 100%;
+      border-radius: 4px;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    .skel.short { width: 55%; }
+    .skel.med   { width: 75%; }
+    .skel.full  { width: 100%; }
+
+    /* contact summary */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .contact-field { display: flex; flex-direction: column; gap: 3px; }
+    .contact-field-label {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-subtle);
+    }
+    .contact-field-value {
+      font-size: 13.5px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .contact-field-value.unknown {
+      color: var(--text-subtle);
+      font-style: italic;
+      font-weight: 400;
+    }
+    .contact-context {
+      grid-column: 1 / -1;
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.65;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+      margin-top: 4px;
+    }
+
+    /* arrays (pain points, objections) */
+    .chip-list { display: flex; flex-direction: column; gap: 7px; }
+    .chip {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 11px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.5;
+    }
+    .chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+    .pain-dot { background: #ef4444; }
+    .objection-dot { background: #f59e0b; }
+    .unknown-chip {
+      color: var(--text-subtle);
+      font-style: italic;
+      background: transparent;
+      border-color: transparent;
+      padding-left: 0;
+    }
+
+    /* next steps */
+    .steps-table { width: 100%; border-collapse: collapse; }
+    .steps-table th {
+      font-size: 10.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text-subtle);
+      text-align: left;
+      padding: 0 10px 8px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .steps-table td {
+      font-size: 13px;
+      color: var(--text-mid);
+      padding: 8px 10px 8px 0;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+    }
+    .steps-table tr:last-child td { border-bottom: none; }
+    .owner-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: var(--blue-light);
+      border: 1px solid var(--blue-mid);
+      border-radius: 12px;
+      font-size: 11.5px;
+      color: var(--blue-dark);
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .timing-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 12px;
+      font-size: 11.5px;
+      color: #15803d;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    .unknown-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 11.5px;
+      color: var(--text-subtle);
+      font-style: italic;
+    }
+
+    /* deal stage */
+    .stage-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .stage-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 16px;
+      border-radius: 20px;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    .stage-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .stage-Prospecting  { background: #f1f5f9; color: #475569; border: 1.5px solid #cbd5e1; }
+    .stage-Prospecting .stage-dot  { background: #64748b; }
+    .stage-Discovery    { background: #eff6ff; color: #1d4ed8; border: 1.5px solid #bfdbfe; }
+    .stage-Discovery .stage-dot    { background: #3b82f6; }
+    .stage-Proposal     { background: #f5f3ff; color: #6d28d9; border: 1.5px solid #ddd6fe; }
+    .stage-Proposal .stage-dot     { background: #7c3aed; }
+    .stage-Negotiation  { background: #fff7ed; color: #c2410c; border: 1.5px solid #fed7aa; }
+    .stage-Negotiation .stage-dot  { background: #ea580c; }
+    .stage-Closed-Won   { background: #f0fdf4; color: #15803d; border: 1.5px solid #bbf7d0; }
+    .stage-Closed-Won .stage-dot   { background: #16a34a; }
+    .stage-Closed-Lost  { background: #fff1f2; color: #be123c; border: 1.5px solid #fecdd3; }
+    .stage-Closed-Lost .stage-dot  { background: #e11d48; }
+
+    .stage-rationale {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* follow-up email */
+    .email-body {
+      font-size: 13px;
+      color: var(--text-mid);
+      line-height: 1.75;
+      white-space: pre-wrap;
+    }
+
+    /* error */
+    .error-banner {
+      background: #fff1f2;
+      border: 1px solid #fecdd3;
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 13px;
+      color: #be123c;
+      display: none;
+    }
+    .error-banner.show { display: block; }
+
+    /* empty state */
+    .empty-state {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 48px 32px;
+      text-align: center;
+    }
+    .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: .5; }
+    .empty-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .empty-sub { font-size: 13px; color: var(--text-subtle); line-height: 1.6; }
+
+    /* spinner */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    /* streaming cursor */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .cursor {
+      display: inline-block;
+      width: 2px; height: 1em;
+      background: var(--blue);
+      vertical-align: text-bottom;
+      margin-left: 1px;
+      animation: blink .8s step-end infinite;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── TOP BAR ───────────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">📋</div>
+    <span class="brand-name">CRM Formatter</span>
+    <span class="brand-sep">·</span>
+    <span class="brand-sub">B2B Sales Note Structurer</span>
+  </div>
+  <div class="api-wrap">
+    <span class="api-label">API Key</span>
+    <input id="apiKey" class="api-input" type="password" placeholder="sk-ant-..." autocomplete="off" />
+    <span id="apiSaved" class="api-saved">✓ saved</span>
+  </div>
+</header>
+
+<!-- ── LAYOUT ────────────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- LEFT: Input -->
+  <div class="left-panel">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Raw Call Notes</span>
+      </div>
+      <div class="card-body">
+        <textarea
+          id="notesInput"
+          class="notes-textarea"
+          placeholder="Paste your unstructured call notes here — messy, abbreviated, or stream-of-consciousness is fine…"
+        ></textarea>
+
+        <div class="example-section">
+          <div class="example-label">Load example</div>
+          <div class="examples-grid">
+            <span class="ex-pill" data-ex="full">🏢 Full discovery call</span>
+            <span class="ex-pill" data-ex="brief">⚡ Quick check-in</span>
+            <span class="ex-pill" data-ex="messy">🌀 Messy/incomplete</span>
+            <span class="ex-pill" data-ex="negotiation">🤝 Negotiation stage</span>
+          </div>
+        </div>
+
+        <button id="generateBtn" class="btn-primary">
+          <span id="btnLabel">⚙️ Structure Notes</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="card-title">What gets extracted</span></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mid);">
+          <span>👤</span> Contact summary (name, company, role)
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mid);">
+          <span>🔥</span> Pain points
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mid);">
+          <span>⚠️</span> Objections raised
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mid);">
+          <span>✅</span> Next steps with owner &amp; timing
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mid);">
+          <span>📊</span> Suggested deal stage
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-mid);">
+          <span>✉️</span> Follow-up email draft
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Output -->
+  <div class="right-panel">
+
+    <div id="errorBanner" class="error-banner"></div>
+
+    <div class="output-topbar">
+      <span class="output-heading" id="outputHeading">CRM Entry</span>
+      <button id="copyAllBtn" class="btn-copy-all" disabled onclick="copyAll()">
+        📋 Copy Full CRM Entry
+      </button>
+    </div>
+
+    <!-- Empty state -->
+    <div id="emptyState" class="empty-state">
+      <div class="empty-icon">📝</div>
+      <div class="empty-title">No notes structured yet</div>
+      <div class="empty-sub">Paste your raw call notes on the left<br>and click <strong>Structure Notes</strong> to begin.</div>
+    </div>
+
+    <!-- Output cards (hidden until results) -->
+    <div id="outputCards" style="display:none; display:flex; flex-direction:column; gap:14px;">
+
+      <!-- Row 1: Contact + Deal Stage -->
+      <div class="out-grid" id="row1">
+        <!-- Contact Summary -->
+        <div class="out-card out-card-full" id="card-contact">
+          <div class="out-card-head">
+            <span class="out-card-label">👤 Contact Summary</span>
+            <button class="btn-copy-field" onclick="copyField('contact')">Copy</button>
+          </div>
+          <div class="out-card-body" id="body-contact">
+            <div class="skeleton-lines">
+              <div class="skel med"></div>
+              <div class="skel short"></div>
+              <div class="skel full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 2: Pain Points + Objections -->
+      <div class="out-grid" id="row2">
+        <div class="out-card" id="card-pain">
+          <div class="out-card-head">
+            <span class="out-card-label">🔥 Pain Points</span>
+            <button class="btn-copy-field" onclick="copyField('pain')">Copy</button>
+          </div>
+          <div class="out-card-body" id="body-pain">
+            <div class="skeleton-lines">
+              <div class="skel full"></div>
+              <div class="skel med"></div>
+              <div class="skel full"></div>
+            </div>
+          </div>
+        </div>
+        <div class="out-card" id="card-objections">
+          <div class="out-card-head">
+            <span class="out-card-label">⚠️ Objections</span>
+            <button class="btn-copy-field" onclick="copyField('objections')">Copy</button>
+          </div>
+          <div class="out-card-body" id="body-objections">
+            <div class="skeleton-lines">
+              <div class="skel full"></div>
+              <div class="skel short"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 3: Next Steps (full width) -->
+      <div class="out-card" id="card-steps">
+        <div class="out-card-head">
+          <span class="out-card-label">✅ Next Steps</span>
+          <button class="btn-copy-field" onclick="copyField('steps')">Copy</button>
+        </div>
+        <div class="out-card-body" id="body-steps">
+          <div class="skeleton-lines">
+            <div class="skel full"></div>
+            <div class="skel med"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 4: Deal Stage -->
+      <div class="out-card" id="card-stage">
+        <div class="out-card-head">
+          <span class="out-card-label">📊 Suggested Deal Stage</span>
+          <button class="btn-copy-field" onclick="copyField('stage')">Copy</button>
+        </div>
+        <div class="out-card-body" id="body-stage">
+          <div class="skeleton-lines">
+            <div class="skel short"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row 5: Follow-up Email (full width) -->
+      <div class="out-card" id="card-email">
+        <div class="out-card-head">
+          <span class="out-card-label">✉️ Follow-up Email Draft</span>
+          <button class="btn-copy-field" onclick="copyField('email')">Copy</button>
+        </div>
+        <div class="out-card-body" id="body-email">
+          <div class="skeleton-lines">
+            <div class="skel full"></div>
+            <div class="skel full"></div>
+            <div class="skel med"></div>
+            <div class="skel full"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /outputCards -->
+  </div><!-- /right-panel -->
+</div><!-- /layout -->
+
+<!-- ── EXAMPLE NOTES ─────────────────────────────────────── -->
+<script>
+const EXAMPLES = {
+  full: `Call with Marcus Webb, VP of Engineering @ Stratum Data (Series B, ~200 ppl).
+Reached out via LinkedIn last week, first real convo today.
+
+They're currently on a legacy Hadoop stack — migration has been on the roadmap for 18 months but keeps getting deprioritized. Marcus mentioned their data team wastes probably 30% of their time on pipeline maintenance. Big pain. They had a bad experience with Vendor X last year — implementation took 9 months and they never got full adoption, so he's skeptical of "all-in-one" platforms.
+
+Walked him through our connector library. He lit up when I showed the dbt integration — their team just started using dbt 3 months ago. Budget conversation: hasn't gone to CFO yet, Marcus thinks they can get $80-120k approved if the technical fit is strong. Timeline is Q3 ideally but nothing locked.
+
+Objections: worried about migration downtime, not sure our support SLA is good enough for their team size, wants to see a case study from a company in the fintech space.
+
+Next: I'll send a fintech case study by EOW. Marcus is going to loop in his Data Architect, Priya Sharma. Schedule a technical deep dive for 2 weeks out. I need to prep a migration playbook doc.
+
+Overall feeling: solid discovery, real pain, budget exists. Moving to Proposal stage feels right if the tech call goes well.`,
+
+  brief: `quick sync w sarah - acme corp - she's the new IT director
+just took over from Bob 3 weeks ago still getting feet wet
+main issue: too many siloed tools, 6 different vendors nobody talks to each other
+asked about budget - "TBD, working on next fy plan"
+liked the dashboard demo
+concern: team is small (3 ppl) worried about implementation burden
+she wants to see pricing by next week
+follow up: send pricing, check back in 10 days`,
+
+  messy: `tom - some kind of ops manager?? at beacon logistics
+can't remember company size - mid market i think
+call was rushed, only 20 min
+they have compliance issues - something about audit trails
+pricing came up - he said "your competitor is cheaper" didn't say who
+needs sign off from legal before anything moves forward
+i said id send over docs
+forgot to ask about timeline
+tom seemed interested but hard to tell`,
+
+  negotiation: `Final negotiation call - Jennifer Cho, CFO, Crestline Capital.
+Deal: $145k ARR, 2-year term.
+They came back asking for 15% discount. I offered 8%, they pushed to 12%. We landed at 10% with a success story commitment (they agree to be a reference customer after 6 months).
+Jennifer also wants SLA bumped from 99.5% to 99.9% uptime — escalated to our engineering team, should hear back by Thursday.
+Contract redlines come from their legal (Daniel Park) — expect markup by end of week.
+POC already signed off technically. Procurement needs a W-9 from us.
+Legal turnaround usually 5-7 business days their side.
+If SLA issue resolved + contract signed by EOM we're good. If not, risk of losing to Q4 freeze.`
+};
+</script>
+
+<!-- ── MAIN SCRIPT ─────────────────────────────────────────── -->
+<script>
+// ── State ──────────────────────────────────────────────────
+let parsedData = null;
+
+// ── API Key ────────────────────────────────────────────────
+const apiKeyInput = document.getElementById('apiKey');
+const apiSaved    = document.getElementById('apiSaved');
+const saved = localStorage.getItem('crm_api_key');
+if (saved) apiKeyInput.value = saved;
+apiKeyInput.addEventListener('change', () => {
+  localStorage.setItem('crm_api_key', apiKeyInput.value.trim());
+  apiSaved.classList.add('show');
+  setTimeout(() => apiSaved.classList.remove('show'), 2000);
+});
+
+function getApiKey() {
+  return (apiKeyInput.value || localStorage.getItem('crm_api_key') || '').trim();
+}
+
+// ── Example pills ──────────────────────────────────────────
+document.querySelectorAll('.ex-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.getElementById('notesInput').value = EXAMPLES[pill.dataset.ex] || '';
+  });
+});
+
+// ── UI helpers ─────────────────────────────────────────────
+function setLoading(on) {
+  const btn   = document.getElementById('generateBtn');
+  const label = document.getElementById('btnLabel');
+  btn.disabled = on;
+  label.innerHTML = on
+    ? '<div class="spinner"></div> Structuring…'
+    : '⚙️ Structure Notes';
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorBanner');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 7000);
+}
+
+function showCards() {
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('outputCards').style.display = 'flex';
+}
+
+// ── Skeleton → real content ────────────────────────────────
+function setSkeleton(bodyId) {
+  const el = document.getElementById(bodyId);
+  el.innerHTML = `<div class="skeleton-lines">
+    <div class="skel full"></div><div class="skel med"></div><div class="skel short"></div>
+  </div>`;
+}
+
+// ── Render helpers ─────────────────────────────────────────
+function notMentioned(val) {
+  return !val || val === 'Not mentioned' || val === 'N/A' || val === '' || val === 'Unknown';
+}
+
+function renderContact(c) {
+  function field(label, val) {
+    const unknown = notMentioned(val);
+    return `<div class="contact-field">
+      <div class="contact-field-label">${label}</div>
+      <div class="contact-field-value${unknown ? ' unknown' : ''}">${unknown ? 'Not mentioned' : escHtml(val)}</div>
+    </div>`;
+  }
+  let html = `<div class="contact-grid">
+    ${field('Name', c.name)}
+    ${field('Company', c.company)}
+    ${field('Role / Title', c.role)}
+    ${field('Company Size', c.companySize)}
+  </div>`;
+  if (c.context && !notMentioned(c.context)) {
+    html += `<div class="contact-context">${escHtml(c.context)}</div>`;
+  }
+  document.getElementById('body-contact').innerHTML = html;
+}
+
+function renderArray(bodyId, items, dotClass) {
+  if (!items || items.length === 0) {
+    document.getElementById(bodyId).innerHTML =
+      `<div class="chip unknown-chip">None identified in these notes.</div>`;
+    return;
+  }
+  const html = items.map(item => {
+    const unknown = notMentioned(item);
+    return `<div class="chip${unknown ? ' unknown-chip' : ''}">
+      ${unknown ? '' : `<div class="chip-dot ${dotClass}"></div>`}
+      <span>${escHtml(unknown ? 'Not mentioned' : item)}</span>
+    </div>`;
+  }).join('');
+  document.getElementById(bodyId).innerHTML = `<div class="chip-list">${html}</div>`;
+}
+
+function renderSteps(steps) {
+  if (!steps || steps.length === 0) {
+    document.getElementById('body-steps').innerHTML =
+      `<div class="chip unknown-chip">No next steps captured in these notes.</div>`;
+    return;
+  }
+  const rows = steps.map(s => {
+    const ownerBadge = notMentioned(s.owner)
+      ? `<span class="unknown-badge">Not mentioned</span>`
+      : `<span class="owner-badge">${escHtml(s.owner)}</span>`;
+    const timingBadge = notMentioned(s.timing)
+      ? `<span class="unknown-badge">Not mentioned</span>`
+      : `<span class="timing-badge">${escHtml(s.timing)}</span>`;
+    return `<tr>
+      <td style="width:50%">${escHtml(s.action)}</td>
+      <td style="width:25%">${ownerBadge}</td>
+      <td style="width:25%">${timingBadge}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('body-steps').innerHTML = `
+    <table class="steps-table">
+      <thead><tr>
+        <th>Action</th><th>Owner</th><th>Timing</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderStage(stage, rationale) {
+  const key = (stage || 'Prospecting').replace(/\s+/g, '-');
+  const label = stage || 'Prospecting';
+  let html = `<div class="stage-wrap">
+    <span class="stage-badge stage-${key}">
+      <span class="stage-dot"></span>${escHtml(label)}
+    </span>`;
+  if (rationale && !notMentioned(rationale)) {
+    html += `<span class="stage-rationale">${escHtml(rationale)}</span>`;
+  }
+  html += `</div>`;
+  document.getElementById('body-stage').innerHTML = html;
+}
+
+function renderEmail(text) {
+  // Stream into the email card
+  const el = document.getElementById('body-email');
+  el.innerHTML = `<div class="email-body" id="email-stream"><span class="cursor"></span></div>`;
+  return document.getElementById('email-stream');
+}
+
+function escHtml(str) {
+  return String(str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// ── Claude API (non-streaming) ─────────────────────────────
+async function callClaude(messages, system) {
+  const key = getApiKey();
+  if (!key) throw new Error('Please enter your Anthropic API key.');
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-6',
+      max_tokens: 2048,
+      system,
+      messages,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `API error ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+// ── Claude API (streaming) ─────────────────────────────────
+async function callClaudeStream(messages, system) {
+  const key = getApiKey();
+  if (!key) throw new Error('Please enter your Anthropic API key.');
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify({
+      model: 'claude-opus-4-6',
+      max_tokens: 512,
+      stream: true,
+      system,
+      messages,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `API error ${res.status}`);
+  }
+
+  return { reader: res.body.getReader(), decoder: new TextDecoder() };
+}
+
+// ── Stream text into a DOM element ─────────────────────────
+async function streamText(reader, decoder, targetEl) {
+  let accumulated = '';
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop();
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const data = line.slice(6).trim();
+      if (data === '[DONE]') continue;
+      try {
+        const evt = JSON.parse(data);
+        if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta') {
+          accumulated += evt.delta.text;
+          targetEl.innerHTML = escHtml(accumulated) + '<span class="cursor"></span>';
+        }
+      } catch {}
+    }
+  }
+
+  targetEl.textContent = accumulated;
+  return accumulated;
+}
+
+// ── System prompt ──────────────────────────────────────────
+const SYSTEM = `You are a CRM data extraction specialist for a B2B SaaS sales team. Your job is to parse raw, unstructured call notes and extract structured data.
+
+IMPORTANT RULES:
+- Always return ONLY valid JSON — no markdown, no explanation, no code fences
+- For any field that cannot be determined from the notes, use the string "Not mentioned"
+- For arrays, if nothing is found, return an empty array []
+- Infer reasonable values when strongly implied (e.g., if someone says "first call", infer Prospecting stage)
+- Be concise but specific — don't pad with vague language
+- The followUpEmail should be ~100 words, professional, reference specific details from the call
+
+Return this exact JSON structure:
+{
+  "contactSummary": {
+    "name": "string or Not mentioned",
+    "company": "string or Not mentioned",
+    "role": "string or Not mentioned",
+    "companySize": "string or Not mentioned",
+    "context": "1-2 sentence background on this contact/company based on the notes"
+  },
+  "painPoints": ["specific pain point 1", "specific pain point 2"],
+  "objections": ["specific objection 1", "specific objection 2"],
+  "nextSteps": [
+    { "action": "what needs to happen", "owner": "who owns it (rep/prospect name or role)", "timing": "when" }
+  ],
+  "suggestedDealStage": "one of: Prospecting / Discovery / Proposal / Negotiation / Closed Won / Closed Lost",
+  "stageRationale": "1 sentence explaining why this stage was chosen",
+  "followUpEmail": "~100-word professional follow-up email text only, no subject line"
+}`;
+
+// ── Build plain-text CRM entry ─────────────────────────────
+function buildPlainText(data) {
+  const c = data.contactSummary;
+  const lines = [
+    '=== CRM NOTE ENTRY ===',
+    '',
+    '— CONTACT —',
+    `Name: ${c.name}`,
+    `Company: ${c.company}`,
+    `Role: ${c.role}`,
+    `Company Size: ${c.companySize}`,
+    `Context: ${c.context}`,
+    '',
+    '— PAIN POINTS —',
+    ...(data.painPoints.length ? data.painPoints.map((p,i) => `${i+1}. ${p}`) : ['Not mentioned']),
+    '',
+    '— OBJECTIONS —',
+    ...(data.objections.length ? data.objections.map((o,i) => `${i+1}. ${o}`) : ['None identified']),
+    '',
+    '— NEXT STEPS —',
+    ...(data.nextSteps.length
+      ? data.nextSteps.map(s => `• ${s.action} [Owner: ${s.owner}] [Timing: ${s.timing}]`)
+      : ['None captured']),
+    '',
+    `— DEAL STAGE —`,
+    `${data.suggestedDealStage} — ${data.stageRationale}`,
+    '',
+    '— FOLLOW-UP EMAIL —',
+    data.followUpEmail,
+  ];
+  return lines.join('\n');
+}
+
+// ── Copy helpers ───────────────────────────────────────────
+function copyAll() {
+  if (!parsedData) return;
+  navigator.clipboard.writeText(buildPlainText(parsedData)).then(() => {
+    const btn = document.getElementById('copyAllBtn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.innerHTML = '📋 Copy Full CRM Entry'; }, 2000);
+  });
+}
+
+function copyField(field) {
+  if (!parsedData) return;
+  const d = parsedData;
+  const map = {
+    contact: `Name: ${d.contactSummary.name}\nCompany: ${d.contactSummary.company}\nRole: ${d.contactSummary.role}\nSize: ${d.contactSummary.companySize}\n${d.contactSummary.context}`,
+    pain: d.painPoints.join('\n') || 'Not mentioned',
+    objections: d.objections.join('\n') || 'None identified',
+    steps: d.nextSteps.map(s => `${s.action} [${s.owner}] [${s.timing}]`).join('\n') || 'None',
+    stage: `${d.suggestedDealStage} — ${d.stageRationale}`,
+    email: d.followUpEmail,
+  };
+  const text = map[field] || '';
+  navigator.clipboard.writeText(text).then(() => {
+    // Flash the button
+    const btns = document.querySelectorAll('.btn-copy-field');
+    // find the right one by onclick
+    document.querySelectorAll('.btn-copy-field').forEach(btn => {
+      if (btn.getAttribute('onclick') === `copyField('${field}')`) {
+        const orig = btn.textContent;
+        btn.textContent = '✓';
+        setTimeout(() => { btn.textContent = 'Copy'; }, 1800);
+      }
+    });
+  });
+}
+
+// ── Main generate ──────────────────────────────────────────
+document.getElementById('generateBtn').addEventListener('click', async () => {
+  const notes = document.getElementById('notesInput').value.trim();
+  if (!notes) {
+    showError('Please paste some call notes first, or click an example above.');
+    return;
+  }
+
+  // Reset
+  parsedData = null;
+  document.getElementById('copyAllBtn').disabled = true;
+  document.getElementById('errorBanner').classList.remove('show');
+
+  // Show cards with skeletons
+  showCards();
+  ['contact','pain','objections','steps','stage'].forEach(id => setSkeleton('body-' + id));
+  setSkeleton('body-email');
+
+  setLoading(true);
+
+  try {
+    // Step 1: Extract JSON (non-streaming for clean parse)
+    const raw = await callClaude(
+      [{ role: 'user', content: `Raw call notes:\n\n${notes}` }],
+      SYSTEM
+    );
+
+    let data;
+    try {
+      const cleaned = raw.replace(/^```json\s*/i,'').replace(/^```\s*/i,'').replace(/```\s*$/,'').trim();
+      data = JSON.parse(cleaned);
+    } catch {
+      throw new Error('Claude returned unexpected output. Please try again.');
+    }
+
+    parsedData = data;
+
+    // Step 2: Render all cards except email
+    renderContact(data.contactSummary);
+    renderArray('body-pain', data.painPoints, 'pain-dot');
+    renderArray('body-objections', data.objections, 'objection-dot');
+    renderSteps(data.nextSteps);
+    renderStage(data.suggestedDealStage, data.stageRationale);
+
+    // Step 3: Stream the follow-up email for effect
+    const emailEl = renderEmail();
+    const { reader, decoder } = await callClaudeStream(
+      [{
+        role: 'user',
+        content: `Write a professional ~100-word follow-up email based on these call notes. Output only the email body text, no subject line, no JSON:\n\n${notes}\n\nContext extracted:\nContact: ${data.contactSummary.name} at ${data.contactSummary.company}\nPain points: ${data.painPoints.join('; ')}\nNext steps agreed: ${data.nextSteps.map(s=>s.action).join('; ')}`
+      }],
+      'You are a B2B sales professional writing concise, specific follow-up emails after sales calls.'
+    );
+
+    const emailText = await streamText(reader, decoder, emailEl);
+    parsedData.followUpEmail = emailText;
+
+    document.getElementById('copyAllBtn').disabled = false;
+    document.getElementById('outputHeading').textContent =
+      data.contactSummary.name !== 'Not mentioned'
+        ? `CRM Entry — ${data.contactSummary.name}`
+        : data.contactSummary.company !== 'Not mentioned'
+        ? `CRM Entry — ${data.contactSummary.company}`
+        : 'CRM Entry';
+
+  } catch (err) {
+    showError(err.message || 'Something went wrong. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+});
+</script>
+
+</body>
+</html>

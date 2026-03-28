@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SEO Blog Content Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue:     #2563eb;
+      --blue-dk:  #1d4ed8;
+      --blue-lt:  #eff6ff;
+      --green:    #10b981;
+      --green-lt: #ecfdf5;
+      --amber:    #f59e0b;
+      --amber-lt: #fffbeb;
+      --red:      #ef4444;
+      --red-lt:   #fef2f2;
+      --gray-900: #111827;
+      --gray-700: #374151;
+      --gray-500: #6b7280;
+      --gray-300: #d1d5db;
+      --gray-200: #e5e7eb;
+      --gray-100: #f3f4f6;
+      --gray-50:  #f9fafb;
+      --white:    #ffffff;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--gray-50); color:var(--gray-900); min-height:100vh; }
+
+    /* ── TOP BAR ── */
+    .topbar {
+      background:var(--white);
+      border-bottom:1px solid var(--gray-200);
+      padding:0 24px;
+      display:flex; align-items:center; justify-content:space-between;
+      height:56px; position:sticky; top:0; z-index:50;
+    }
+    .topbar-logo { font-size:1rem; font-weight:700; color:var(--blue); letter-spacing:-0.02em; }
+    .topbar-logo span { color:var(--gray-900); }
+
+    /* ── STEP INDICATOR ── */
+    .step-bar {
+      background:var(--white);
+      border-bottom:1px solid var(--gray-200);
+      padding:0 24px;
+      display:flex; align-items:center;
+      height:48px; gap:0;
+      overflow-x:auto;
+    }
+    .step-item {
+      display:flex; align-items:center; gap:8px;
+      padding:0 16px 0 0;
+      font-size:0.8rem; font-weight:500;
+      color:var(--gray-400, #9ca3af);
+      white-space:nowrap;
+    }
+    .step-item + .step-item::before {
+      content:'›';
+      margin-right:16px;
+      color:var(--gray-300);
+    }
+    .step-num {
+      width:22px; height:22px;
+      border-radius:50%;
+      background:var(--gray-200);
+      color:var(--gray-500);
+      font-size:0.7rem; font-weight:600;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0;
+    }
+    .step-item.done .step-num  { background:var(--green); color:var(--white); }
+    .step-item.active .step-num{ background:var(--blue); color:var(--white); }
+    .step-item.active           { color:var(--gray-900); }
+    .step-item.done             { color:var(--gray-500); }
+
+    /* ── LAYOUT ── */
+    .page { max-width:820px; margin:0 auto; padding:36px 24px 80px; }
+    .page-wide { max-width:980px; margin:0 auto; padding:36px 24px 80px; }
+
+    /* ── CARDS ── */
+    .card {
+      background:var(--white);
+      border:1px solid var(--gray-200);
+      border-radius:10px;
+      padding:28px;
+      margin-bottom:20px;
+    }
+    .card-title { font-size:0.7rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--gray-500); margin-bottom:16px; }
+
+    /* ── FORM ── */
+    .field { margin-bottom:20px; }
+    .field label { display:block; font-size:0.82rem; font-weight:600; color:var(--gray-700); margin-bottom:6px; }
+    .field .hint { font-size:0.76rem; color:var(--gray-500); margin-top:5px; }
+    input[type=text], input[type=password], textarea, select {
+      width:100%; padding:9px 12px;
+      font-family:'Inter',sans-serif; font-size:0.88rem;
+      color:var(--gray-900); background:var(--white);
+      border:1.5px solid var(--gray-200); border-radius:6px;
+      outline:none; transition:border-color 0.15s;
+    }
+    input:focus, textarea:focus, select:focus { border-color:var(--blue); }
+    textarea { min-height:80px; resize:vertical; line-height:1.5; }
+
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    @media(max-width:560px){ .form-row{ grid-template-columns:1fr; } }
+
+    .seg-group { display:flex; gap:6px; flex-wrap:wrap; }
+    .seg-btn {
+      padding:7px 14px; font-size:0.82rem; font-weight:500;
+      color:var(--gray-700); background:var(--white);
+      border:1.5px solid var(--gray-200); border-radius:6px;
+      cursor:pointer; transition:all 0.12s;
+    }
+    .seg-btn:hover { border-color:var(--blue); color:var(--blue); }
+    .seg-btn.on { background:var(--blue); border-color:var(--blue); color:var(--white); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display:inline-flex; align-items:center; gap:7px;
+      padding:9px 20px; font-size:0.85rem; font-weight:600;
+      border-radius:7px; border:1.5px solid transparent;
+      cursor:pointer; transition:all 0.14s; font-family:'Inter',sans-serif;
+    }
+    .btn-primary { background:var(--blue); color:var(--white); border-color:var(--blue); }
+    .btn-primary:hover:not(:disabled) { background:var(--blue-dk); }
+    .btn-ghost   { background:var(--white); color:var(--gray-700); border-color:var(--gray-200); }
+    .btn-ghost:hover  { border-color:var(--blue); color:var(--blue); }
+    .btn-sm { padding:6px 14px; font-size:0.78rem; }
+    .btn:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn.loading { position:relative; color:transparent !important; pointer-events:none; }
+    .btn.loading::after {
+      content:''; position:absolute;
+      width:16px; height:16px;
+      border:2px solid rgba(255,255,255,0.35); border-top-color:var(--white);
+      border-radius:50%; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      animation:spin 0.7s linear infinite;
+    }
+    .btn-ghost.loading::after { border-color:rgba(37,99,235,0.25); border-top-color:var(--blue); }
+
+    /* ── ERROR ── */
+    .err { background:var(--red-lt); border:1px solid #fca5a5; color:#b91c1c; padding:10px 14px; border-radius:6px; font-size:0.84rem; margin-bottom:16px; }
+
+    /* ── TITLE CARDS ── */
+    .title-card {
+      border:2px solid var(--gray-200); border-radius:8px;
+      padding:16px 18px; cursor:pointer; transition:all 0.14s;
+      margin-bottom:10px; display:flex; align-items:flex-start; gap:12px;
+    }
+    .title-card:hover { border-color:var(--blue); background:var(--blue-lt); }
+    .title-card.selected { border-color:var(--blue); background:var(--blue-lt); }
+    .title-radio {
+      width:18px; height:18px; border-radius:50%;
+      border:2px solid var(--gray-300); flex-shrink:0; margin-top:2px;
+      display:flex; align-items:center; justify-content:center;
+      transition:all 0.12s;
+    }
+    .title-card.selected .title-radio { border-color:var(--blue); background:var(--blue); }
+    .title-card.selected .title-radio::after { content:''; width:6px; height:6px; background:var(--white); border-radius:50%; }
+    .title-text { font-size:0.95rem; font-weight:600; color:var(--gray-900); line-height:1.4; }
+    .char-hint { font-size:0.73rem; color:var(--gray-500); margin-top:4px; }
+
+    .meta-box {
+      background:var(--gray-50); border:1px solid var(--gray-200);
+      border-radius:6px; padding:14px 16px;
+    }
+    .meta-box .meta-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--gray-500); margin-bottom:6px; }
+    .meta-box p { font-size:0.88rem; color:var(--gray-700); line-height:1.55; }
+    .meta-box .meta-len { font-size:0.73rem; color:var(--gray-400); margin-top:4px; }
+
+    /* ── OUTLINE ── */
+    .outline-section { margin-bottom:18px; }
+    .h2-label {
+      font-size:0.92rem; font-weight:700; color:var(--gray-900);
+      padding:8px 12px; background:var(--gray-100); border-radius:6px;
+      border-left:3px solid var(--blue); margin-bottom:6px;
+    }
+    .h3-list { padding-left:20px; }
+    .h3-item {
+      font-size:0.85rem; color:var(--gray-700);
+      padding:5px 10px; display:flex; align-items:center; gap:8px;
+    }
+    .h3-item::before { content:'↳'; color:var(--gray-400); flex-shrink:0; }
+    .notes-text { font-size:0.78rem; color:var(--gray-500); font-style:italic; padding:4px 12px 8px; }
+
+    /* ── ARTICLE ── */
+    .kw-bar {
+      background:var(--white); border:1px solid var(--gray-200);
+      border-radius:10px; padding:16px 20px;
+      display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+      margin-bottom:20px; position:sticky; top:104px; z-index:40;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    }
+    .kw-stat { display:flex; flex-direction:column; align-items:center; }
+    .kw-stat .val { font-size:1.5rem; font-weight:700; line-height:1; }
+    .kw-stat .lbl { font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--gray-500); margin-top:2px; }
+    .density-pill {
+      padding:5px 14px; border-radius:20px;
+      font-size:0.82rem; font-weight:700;
+      display:flex; align-items:center; gap:6px;
+    }
+    .density-pill.low   { background:var(--amber-lt); color:#92400e; }
+    .density-pill.good  { background:var(--green-lt); color:#065f46; }
+    .density-pill.high  { background:var(--red-lt);   color:#991b1b; }
+    .density-label { font-size:0.72rem; font-weight:500; }
+
+    .art-section {
+      background:var(--white); border:1px solid var(--gray-200);
+      border-radius:10px; padding:24px 28px;
+      margin-bottom:16px; position:relative;
+    }
+    @media(max-width:600px){ .art-section{ padding:18px 16px; } }
+
+    .sec-copy-btn {
+      position:absolute; top:14px; right:16px;
+      padding:4px 12px; font-size:0.73rem; font-weight:600;
+      background:var(--white); border:1.5px solid var(--gray-200);
+      border-radius:5px; cursor:pointer; color:var(--gray-500);
+      transition:all 0.12s; font-family:'Inter',sans-serif;
+    }
+    .sec-copy-btn:hover { border-color:var(--blue); color:var(--blue); }
+    .sec-copy-btn.done  { border-color:var(--green); color:var(--green); }
+
+    .art-section h1 { font-size:1.6rem; font-weight:700; margin-bottom:16px; line-height:1.3; color:var(--gray-900); }
+    .art-section h2 { font-size:1.25rem; font-weight:700; margin-bottom:12px; margin-top:4px; color:var(--gray-900); }
+    .art-section h3 { font-size:1.05rem; font-weight:600; margin-bottom:10px; margin-top:14px; color:var(--gray-800); }
+    .art-section p  { font-size:0.92rem; line-height:1.75; color:var(--gray-700); margin-bottom:12px; }
+    .art-section ul, .art-section ol { padding-left:20px; margin-bottom:12px; }
+    .art-section li { font-size:0.92rem; line-height:1.7; color:var(--gray-700); margin-bottom:4px; }
+    .art-section strong { color:var(--gray-900); }
+    .art-section mark { background:#fef08a; color:inherit; border-radius:2px; padding:0 1px; }
+
+    .toolbar { display:flex; gap:10px; align-items:center; margin-bottom:20px; flex-wrap:wrap; }
+
+    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+    .fade-in { animation:fadeIn 0.3s ease both; }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">SEO<span>Blog</span></div>
+  <div style="font-size:0.78rem;color:var(--gray-500)">Powered by Claude</div>
+</div>
+
+<!-- STEP BAR -->
+<div class="step-bar" id="step-bar">
+  <div class="step-item active" id="si-0"><div class="step-num">1</div> Inputs</div>
+  <div class="step-item"        id="si-1"><div class="step-num">2</div> Titles</div>
+  <div class="step-item"        id="si-2"><div class="step-num">3</div> Outline</div>
+  <div class="step-item"        id="si-3"><div class="step-num">4</div> Article</div>
+</div>
+
+<!-- ── STEP 0: FORM ── -->
+<div id="step-form" class="page">
+
+  <div class="card">
+    <div class="card-title">API Key</div>
+    <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off">
+  </div>
+
+  <div class="card">
+    <div class="card-title">Content Details</div>
+    <div class="field">
+      <label>Blog Topic</label>
+      <input type="text" id="topic" placeholder="e.g. How to build a sustainable morning routine">
+    </div>
+    <div class="field">
+      <label>Target Keyword</label>
+      <input type="text" id="keyword" placeholder="e.g. morning routine tips">
+      <div class="hint">Primary keyword to optimise for. Will be tracked in keyword density.</div>
+    </div>
+    <div class="field">
+      <label>Target Audience</label>
+      <input type="text" id="audience" placeholder="e.g. busy professionals aged 25–40">
+    </div>
+    <div class="form-row">
+      <div class="field" style="margin-bottom:0">
+        <label>Brand Voice</label>
+        <div class="seg-group" id="grp-voice">
+          <button class="seg-btn" data-v="Professional"  onclick="pick('voice',this)">Professional</button>
+          <button class="seg-btn" data-v="Casual"        onclick="pick('voice',this)">Casual</button>
+          <button class="seg-btn" data-v="Authoritative" onclick="pick('voice',this)">Authoritative</button>
+          <button class="seg-btn" data-v="Friendly"      onclick="pick('voice',this)">Friendly</button>
+          <button class="seg-btn" data-v="Bold"          onclick="pick('voice',this)">Bold</button>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Article Length</label>
+        <div class="seg-group" id="grp-length">
+          <button class="seg-btn" data-v="500"  onclick="pick('length',this)">500 words</button>
+          <button class="seg-btn" data-v="800"  onclick="pick('length',this)">800 words</button>
+          <button class="seg-btn" data-v="1200" onclick="pick('length',this)">1200 words</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="form-err"></div>
+  <button class="btn btn-primary" id="btn-gen-titles" onclick="genTitles()">
+    Generate Title Options →
+  </button>
+
+</div>
+
+<!-- ── STEP 1: TITLES ── -->
+<div id="step-titles" class="page" style="display:none">
+
+  <div style="margin-bottom:20px">
+    <div style="font-size:1.1rem;font-weight:700;margin-bottom:4px">Choose Your Title</div>
+    <div style="font-size:0.85rem;color:var(--gray-500)">Select the title that best fits your goals, then generate your outline.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Title Options</div>
+    <div id="title-options"></div>
+  </div>
+
+  <div class="card" id="meta-card">
+    <div class="card-title">Meta Description</div>
+    <div class="meta-box">
+      <div class="meta-label">Suggested Meta Description</div>
+      <p id="meta-desc-text"></p>
+      <div class="meta-len" id="meta-len"></div>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="btn btn-ghost" onclick="showStep('form')">← Back</button>
+    <button class="btn btn-primary" id="btn-gen-outline" onclick="genOutline()">
+      Generate Outline →
+    </button>
+    <div id="titles-err" style="flex:1"></div>
+  </div>
+
+</div>
+
+<!-- ── STEP 2: OUTLINE ── -->
+<div id="step-outline" class="page" style="display:none">
+
+  <div style="margin-bottom:20px">
+    <div style="font-size:1.1rem;font-weight:700;margin-bottom:4px">Article Outline</div>
+    <div style="font-size:0.85rem;color:var(--gray-500)">Review your structure before Claude writes the full article.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Structure</div>
+    <div id="outline-content"></div>
+  </div>
+
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="btn btn-ghost" onclick="showStep('titles')">← Back</button>
+    <button class="btn btn-primary" id="btn-gen-article" onclick="genArticle()">
+      Write Full Article →
+    </button>
+    <div id="outline-err" style="flex:1"></div>
+  </div>
+
+</div>
+
+<!-- ── STEP 3: ARTICLE ── -->
+<div id="step-article" class="page-wide" style="display:none">
+
+  <div class="kw-bar">
+    <div class="kw-stat">
+      <div class="val" id="kw-count" style="color:var(--blue)">—</div>
+      <div class="lbl">Keyword Uses</div>
+    </div>
+    <div class="kw-stat">
+      <div class="val" id="word-count" style="color:var(--gray-700)">—</div>
+      <div class="lbl">Word Count</div>
+    </div>
+    <div class="kw-stat">
+      <div class="density-pill low" id="density-pill">
+        <span id="density-pct">—%</span>
+        <span class="density-label" id="density-lbl">Density</span>
+      </div>
+    </div>
+    <div style="font-size:0.75rem;color:var(--gray-500);margin-left:auto">
+      Keyword: <strong id="kw-display" style="color:var(--gray-900)"></strong>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn btn-ghost btn-sm" onclick="showStep('outline')">← Outline</button>
+    <button class="btn btn-ghost btn-sm" id="btn-copy-all" onclick="copyAll()">Copy Full Article</button>
+    <button class="btn btn-ghost btn-sm" id="btn-regen" onclick="genArticle()">Regenerate</button>
+    <span id="copy-all-msg" style="font-size:0.8rem;color:var(--green);display:none">Copied!</span>
+  </div>
+
+  <div id="article-err" style="margin-bottom:12px"></div>
+  <div id="article-content"></div>
+
+</div>
+
+<script>
+  const API = 'https://api.anthropic.com/v1/messages';
+  const MODEL = 'claude-opus-4-6';
+
+  let sel = { voice: '', length: '' };
+  let titles3 = [], metaDesc = '', selectedTitle = '';
+  let outlineData = [];
+  let rawArticle = '';
+  let sectionTexts = [];
+
+  // ── INIT ─────────────────────────────────────────
+  (function() {
+    const k = localStorage.getItem('seo-blog-key');
+    if (k) document.getElementById('api-key').value = k;
+  })();
+
+  // ── STEP NAVIGATION ──────────────────────────────
+  function showStep(name) {
+    ['form','titles','outline','article'].forEach((s,i) => {
+      document.getElementById('step-' + s).style.display = s === name ? 'block' : 'none';
+      const si = document.getElementById('si-' + i);
+      const names = ['form','titles','outline','article'];
+      const cur = names.indexOf(name);
+      si.className = 'step-item ' + (i < cur ? 'done' : i === cur ? 'active' : '');
+    });
+  }
+
+  // ── PICKERS ──────────────────────────────────────
+  function pick(group, el) {
+    sel[group] = el.dataset.v;
+    document.querySelectorAll(`#grp-${group} .seg-btn`).forEach(b => b.classList.remove('on'));
+    el.classList.add('on');
+  }
+
+  // ── STEP 1: GENERATE TITLES ───────────────────────
+  async function genTitles() {
+    const apiKey = document.getElementById('api-key').value.trim();
+    const topic   = document.getElementById('topic').value.trim();
+    const keyword = document.getElementById('keyword').value.trim();
+    const audience= document.getElementById('audience').value.trim();
+
+    clearErr('form-err');
+    if (!apiKey)   return setErr('form-err', 'Please enter your Anthropic API key.');
+    if (!topic)    return setErr('form-err', 'Please enter a blog topic.');
+    if (!keyword)  return setErr('form-err', 'Please enter a target keyword.');
+    if (!audience) return setErr('form-err', 'Please enter a target audience.');
+    if (!sel.voice)  return setErr('form-err', 'Please select a brand voice.');
+    if (!sel.length) return setErr('form-err', 'Please select an article length.');
+
+    localStorage.setItem('seo-blog-key', apiKey);
+
+    const btn = document.getElementById('btn-gen-titles');
+    setLoading(btn, true);
+
+    const prompt = `You are an expert SEO content strategist. Generate 3 compelling blog post title options and a meta description.
+
+Blog Topic: ${topic}
+Target Keyword: "${keyword}"
+Target Audience: ${audience}
+Brand Voice: ${sel.voice}
+
+Return ONLY valid JSON, no markdown:
+{
+  "titles": [
+    "Title option 1 (50-60 chars, includes keyword)",
+    "Title option 2 (different angle, includes keyword)",
+    "Title option 3 (different format, includes keyword)"
+  ],
+  "meta_description": "150-160 character meta description naturally including '${keyword}'"
+}
+
+Title requirements:
+- Each title 50-60 characters
+- Naturally include "${keyword}"
+- Vary the format: e.g. how-to, numbered list, question, statement
+- Match ${sel.voice} brand voice
+- Optimised for click-through rate`;
+
+    try {
+      const raw = await claude(apiKey, prompt, 600);
+      const data = JSON.parse(stripFences(raw));
+      titles3 = data.titles;
+      metaDesc = data.meta_description;
+      renderTitles();
+      showStep('titles');
+    } catch (e) {
+      setErr('form-err', 'Error: ' + e.message);
+    } finally {
+      setLoading(btn, false);
+      btn.textContent = 'Generate Title Options →';
+    }
+  }
+
+  function renderTitles() {
+    const container = document.getElementById('title-options');
+    container.innerHTML = titles3.map((t, i) => `
+      <div class="title-card fade-in" id="tc-${i}" onclick="selectTitle(${i})" style="animation-delay:${i*0.08}s">
+        <div class="title-radio" id="tr-${i}"></div>
+        <div>
+          <div class="title-text">${esc(t)}</div>
+          <div class="char-hint">${t.length} characters</div>
+        </div>
+      </div>`).join('');
+    document.getElementById('meta-desc-text').textContent = metaDesc;
+    document.getElementById('meta-len').textContent = metaDesc.length + ' characters';
+    selectedTitle = '';
+  }
+
+  function selectTitle(i) {
+    titles3.forEach((_, n) => {
+      document.getElementById('tc-' + n).classList.toggle('selected', n === i);
+    });
+    selectedTitle = titles3[i];
+  }
+
+  // ── STEP 2: GENERATE OUTLINE ──────────────────────
+  async function genOutline() {
+    if (!selectedTitle) return setErr('titles-err', 'Please select a title first.');
+    clearErr('titles-err');
+
+    const apiKey  = document.getElementById('api-key').value.trim();
+    const keyword = document.getElementById('keyword').value.trim();
+    const audience= document.getElementById('audience').value.trim();
+    const btn = document.getElementById('btn-gen-outline');
+    setLoading(btn, true);
+
+    const numSections = sel.length === '500' ? 3 : sel.length === '800' ? 4 : 6;
+
+    const prompt = `You are an expert SEO content strategist. Create a detailed blog post outline.
+
+Title: "${selectedTitle}"
+Target Keyword: "${keyword}"
+Target Audience: ${audience}
+Brand Voice: ${sel.voice}
+Target Word Count: ${sel.length} words
+
+Return ONLY valid JSON, no markdown:
+{
+  "sections": [
+    {
+      "h2": "Main section heading (naturally includes keyword where appropriate)",
+      "h3s": ["Subheading 1", "Subheading 2"],
+      "notes": "Brief note on what this section covers and its purpose"
+    }
+  ]
+}
+
+Requirements:
+- Create ${numSections} H2 sections (including Introduction and Conclusion)
+- Each section 1–3 H3 subheadings (Introduction/Conclusion can have 0)
+- Include "${keyword}" naturally in 1–2 H2 headings
+- Structure should logically build toward solving the audience's problem
+- Conclusion should include a call-to-action`;
+
+    try {
+      const raw = await claude(apiKey, prompt, 1000);
+      outlineData = JSON.parse(stripFences(raw)).sections;
+      renderOutline();
+      showStep('outline');
+    } catch (e) {
+      setErr('titles-err', 'Error: ' + e.message);
+    } finally {
+      setLoading(btn, false);
+      btn.textContent = 'Generate Outline →';
+    }
+  }
+
+  function renderOutline() {
+    document.getElementById('outline-content').innerHTML = outlineData.map((sec, i) => `
+      <div class="outline-section fade-in" style="animation-delay:${i*0.06}s">
+        <div class="h2-label">H2 — ${esc(sec.h2)}</div>
+        ${sec.h3s && sec.h3s.length ? `
+          <div class="h3-list">
+            ${sec.h3s.map(h => `<div class="h3-item">${esc(h)}</div>`).join('')}
+          </div>` : ''}
+        ${sec.notes ? `<div class="notes-text">${esc(sec.notes)}</div>` : ''}
+      </div>`).join('');
+  }
+
+  // ── STEP 3: GENERATE ARTICLE ──────────────────────
+  async function genArticle() {
+    const apiKey  = document.getElementById('api-key').value.trim();
+    const keyword = document.getElementById('keyword').value.trim();
+    const audience= document.getElementById('audience').value.trim();
+    const topic   = document.getElementById('topic').value.trim();
+
+    const btn = document.getElementById('btn-gen-article');
+    const regenBtn = document.getElementById('btn-regen');
+    setLoading(btn, true);
+    regenBtn && setLoading(regenBtn, true);
+
+    // Route errors to whichever step is currently visible
+    const errTarget = document.getElementById('step-article').style.display !== 'none'
+      ? 'article-err' : 'outline-err';
+    clearErr('outline-err');
+    clearErr('article-err');
+
+    const kwTarget = Math.round(parseInt(sel.length) / 120);
+    const outlineText = outlineData.map(s =>
+      `## ${s.h2}${s.h3s?.length ? '\n' + s.h3s.map(h => `### ${h}`).join('\n') : ''}`
+    ).join('\n\n');
+
+    const voiceGuide = {
+      Professional:  'formal, precise, trustworthy — data-backed where possible',
+      Casual:        'conversational, warm, relatable — like advice from a knowledgeable friend',
+      Authoritative: 'expert, decisive, in-depth — cite reasoning, no hedging',
+      Friendly:      'warm, encouraging, approachable — use "you" frequently',
+      Bold:          'direct, punchy, confident — strong statements, no filler'
+    }[sel.voice] || sel.voice;
+
+    const prompt = `Write a complete ${sel.length}-word blog post.
+
+Title: "${selectedTitle}"
+Target Keyword: "${keyword}" — use naturally approximately ${kwTarget} times
+Target Audience: ${audience}
+Brand Voice: ${sel.voice} (${voiceGuide})
+Topic: ${topic}
+
+Follow this exact outline (use ## for H2, ### for H3):
+${outlineText}
+
+Requirements:
+- Start directly with the intro paragraph — no preamble like "Here is the article"
+- Write exactly to the ${sel.length}-word target
+- Naturally weave "${keyword}" throughout — never force it
+- Every H2/H3 from the outline must appear verbatim
+- No markdown bold (**text**) in headings — only in body for emphasis
+- Paragraphs 2–4 sentences each
+- Engaging, valuable content that delivers on the title's promise
+- End with a clear call-to-action`;
+
+    const maxTok = sel.length === '500' ? 900 : sel.length === '800' ? 1400 : 2100;
+
+    try {
+      const raw = await claude(apiKey, prompt, maxTok);
+      rawArticle = raw;
+      renderArticle(raw, keyword);
+      document.getElementById('kw-display').textContent = '"' + keyword + '"';
+      showStep('article');
+      window.scrollTo(0,0);
+    } catch (e) {
+      setErr(errTarget, 'Error: ' + e.message);
+    } finally {
+      setLoading(btn, false);
+      btn.textContent = 'Write Full Article →';
+      regenBtn && setLoading(regenBtn, false);
+      regenBtn && (regenBtn.textContent = 'Regenerate');
+    }
+  }
+
+  function renderArticle(md, keyword) {
+    sectionTexts = [];
+
+    // Split by H2 boundaries (keep the ## marker)
+    const parts = md.split(/(?=^## )/m);
+
+    // Keyword density
+    const plainText = md.replace(/#+\s/g, '').replace(/\*\*/g, '');
+    const words = plainText.trim().split(/\s+/).length;
+    const kwRegex = new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi');
+    const kwMatches = (plainText.match(kwRegex) || []).length;
+    const density = words > 0 ? ((kwMatches / words) * 100) : 0;
+
+    document.getElementById('kw-count').textContent = kwMatches;
+    document.getElementById('word-count').textContent = words.toLocaleString();
+    document.getElementById('density-pct').textContent = density.toFixed(1) + '%';
+
+    const pill = document.getElementById('density-pill');
+    const lbl  = document.getElementById('density-lbl');
+    if (density < 0.5) {
+      pill.className = 'density-pill low';
+      lbl.textContent = '↑ Too Low';
+    } else if (density > 3.0) {
+      pill.className = 'density-pill high';
+      lbl.textContent = '↓ Too High';
+    } else {
+      pill.className = 'density-pill good';
+      lbl.textContent = '✓ Good';
+    }
+
+    // Render sections
+    document.getElementById('article-content').innerHTML = parts.map((part, idx) => {
+      sectionTexts.push(part.trim());
+      const html = mdToHtml(part);
+      const highlighted = highlightKw(html, keyword);
+      return `
+        <div class="art-section fade-in" style="animation-delay:${idx*0.05}s">
+          <button class="sec-copy-btn" id="scb-${idx}" onclick="copySection(${idx})">Copy</button>
+          ${highlighted}
+        </div>`;
+    }).join('');
+  }
+
+  // ── MARKDOWN PARSER ───────────────────────────────
+  function mdToHtml(md) {
+    const lines = md.split('\n');
+    let html = '', inUl = false, inOl = false;
+
+    for (const line of lines) {
+      const t = line.trim();
+      if (!t) {
+        if (inUl) { html += '</ul>'; inUl = false; }
+        if (inOl) { html += '</ol>'; inOl = false; }
+        continue;
+      }
+      if      (t.startsWith('### ')) { closeList(); html += `<h3>${inl(t.slice(4))}</h3>`; }
+      else if (t.startsWith('## '))  { closeList(); html += `<h2>${inl(t.slice(3))}</h2>`; }
+      else if (t.startsWith('# '))   { closeList(); html += `<h1>${inl(t.slice(2))}</h1>`; }
+      else if (/^[-*] /.test(t)) {
+        if (inOl) { html += '</ol>'; inOl = false; }
+        if (!inUl) { html += '<ul>'; inUl = true; }
+        html += `<li>${inl(t.slice(2))}</li>`;
+      } else if (/^\d+\. /.test(t)) {
+        if (inUl) { html += '</ul>'; inUl = false; }
+        if (!inOl) { html += '<ol>'; inOl = true; }
+        html += `<li>${inl(t.replace(/^\d+\. /,''))}</li>`;
+      } else {
+        closeList();
+        html += `<p>${inl(t)}</p>`;
+      }
+    }
+    closeList();
+    return html;
+
+    function closeList() {
+      if (inUl) { html += '</ul>'; inUl = false; }
+      if (inOl) { html += '</ol>'; inOl = false; }
+    }
+  }
+
+  function inl(s) {
+    return s
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,'<em>$1</em>')
+      .replace(/`(.+?)`/g,'<code>$1</code>');
+  }
+
+  function highlightKw(html, kw) {
+    if (!kw) return html;
+    const safe = kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    // Replace keyword only inside text nodes (between > and <), never inside tag attributes
+    return html.replace(/(>[^<]+<)/g, match =>
+      match.replace(new RegExp(`(${safe})`, 'gi'), '<mark>$1</mark>')
+    );
+  }
+
+  // ── COPY HELPERS ──────────────────────────────────
+  function copySection(idx) {
+    navigator.clipboard.writeText(sectionTexts[idx] || '').then(() => {
+      const btn = document.getElementById('scb-' + idx);
+      btn.textContent = 'Copied!';
+      btn.classList.add('done');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('done'); }, 2000);
+    });
+  }
+
+  function copyAll() {
+    navigator.clipboard.writeText(rawArticle).then(() => {
+      const msg = document.getElementById('copy-all-msg');
+      msg.style.display = 'inline';
+      setTimeout(() => msg.style.display = 'none', 2200);
+    });
+  }
+
+  // ── CLAUDE API ────────────────────────────────────
+  async function claude(apiKey, prompt, maxTok) {
+    const r = await fetch(API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: MODEL, max_tokens: maxTok,
+        messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!r.ok) {
+      const e = await r.json().catch(() => ({}));
+      throw new Error(e.error?.message || `HTTP ${r.status}`);
+    }
+    return (await r.json()).content[0].text;
+  }
+
+  // ── UTILITIES ─────────────────────────────────────
+  function stripFences(s) {
+    return s.replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
+  }
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function setErr(id, msg) {
+    document.getElementById(id).innerHTML = `<div class="err">${esc(msg)}</div>`;
+  }
+  function clearErr(id) { document.getElementById(id).innerHTML = ''; }
+  function setLoading(btn, on) {
+    btn.disabled = on;
+    btn.classList.toggle('loading', on);
+  }
+</script>
+</body>
+</html>

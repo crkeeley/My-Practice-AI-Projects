@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Law Study</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0f1a1a; color: #e8e8f0; min-height: 100vh; }
+
+    /* ── HOME ── */
+    #home { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; }
+    #home h1 { font-size: 2.8rem; color: #3dd6b5; letter-spacing: -1px; }
+    #home .subtitle { color: #888; margin: 0.5rem 0 2.5rem; font-size: 1rem; }
+    .stats { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2.5rem; }
+    .stat { background: #1a2e2e; padding: 1rem 2rem; border-radius: 10px; }
+    .stat .num { font-size: 2rem; font-weight: 700; color: #3dd6b5; }
+    .stat .lbl { color: #777; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+    .mode-btns { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+    .mode-btn { background: #1a2e2e; border: 2px solid #3dd6b5; color: #fff; padding: 1.8rem 3rem; border-radius: 14px; font-size: 1.2rem; cursor: pointer; transition: all 0.2s; min-width: 180px; }
+    .mode-btn:hover { background: #3dd6b5; color: #0f1a1a; transform: translateY(-4px); box-shadow: 0 8px 24px rgba(61,214,181,0.3); }
+    .mode-btn .icon { font-size: 2.2rem; display: block; margin-bottom: 0.6rem; }
+
+    /* ── SHARED ── */
+    .screen { display: none; min-height: 100vh; padding: 1.5rem; max-width: 800px; margin: 0 auto; }
+    .top-bar { display: flex; align-items: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 1px solid #1e3333; margin-bottom: 1.5rem; }
+    .top-bar h2 { font-size: 1.4rem; }
+    .back-btn { background: none; border: 1px solid #444; color: #aaa; padding: 0.45rem 0.9rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
+    .back-btn:hover { border-color: #3dd6b5; color: #3dd6b5; }
+
+    /* ── FLASHCARDS ── */
+    .cat-strip { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .cat-btn { background: #1a2e2e; border: 1px solid #2a4a4a; color: #888; padding: 0.35rem 0.85rem; border-radius: 20px; cursor: pointer; font-size: 0.82rem; transition: all 0.15s; }
+    .cat-btn.active { background: #3dd6b5; border-color: #3dd6b5; color: #0f1a1a; font-weight: 600; }
+    .cat-btn:hover:not(.active) { border-color: #3dd6b5; color: #3dd6b5; }
+
+    .card-wrap { display: flex; flex-direction: column; align-items: center; }
+    .card-counter { color: #666; font-size: 0.9rem; margin-bottom: 1rem; }
+    .flashcard { width: 100%; max-width: 680px; height: 300px; perspective: 1200px; cursor: pointer; }
+    .fc-inner { position: relative; width: 100%; height: 100%; transition: transform 0.45s cubic-bezier(.4,0,.2,1); transform-style: preserve-3d; }
+    .flashcard.flipped .fc-inner { transform: rotateY(180deg); }
+    .fc-front, .fc-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px; padding: 2rem; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+    .fc-front { background: #1a2e2e; border: 2px solid #3dd6b5; }
+    .fc-back  { background: #0d2030; border: 2px solid #6ea8fe; transform: rotateY(180deg); }
+    .fc-tag { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 0.8rem; color: #3dd6b5; }
+    .fc-back .fc-tag { color: #6ea8fe; }
+    .fc-text { font-size: 1.05rem; line-height: 1.65; white-space: pre-wrap; }
+    .fc-back .fc-text { font-size: 0.98rem; color: #c8dffe; }
+    .fc-hint { margin-top: 1rem; font-size: 0.75rem; color: #555; }
+
+    .card-nav { display: flex; gap: 0.75rem; margin-top: 1.25rem; align-items: center; }
+    .nav-btn { background: #1a2e2e; border: 1px solid #3dd6b5; color: #3dd6b5; padding: 0.6rem 1.3rem; border-radius: 8px; cursor: pointer; transition: all 0.15s; font-size: 0.95rem; }
+    .nav-btn:hover:not(:disabled) { background: #3dd6b5; color: #0f1a1a; }
+    .nav-btn:disabled { border-color: #2a3a3a; color: #3a4a4a; cursor: not-allowed; }
+    .shuf-btn { background: #1a2e2e; border: 1px solid #6ea8fe; color: #6ea8fe; padding: 0.6rem 1.2rem; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
+    .shuf-btn:hover { background: #6ea8fe; color: #0d1a2e; }
+
+    /* ── QUIZ ── */
+    .prog-bar { background: #1a2e2e; height: 6px; border-radius: 3px; margin-bottom: 1.5rem; overflow: hidden; }
+    .prog-fill { background: #3dd6b5; height: 100%; border-radius: 3px; transition: width 0.3s; }
+    .q-box { background: #1a2e2e; border-radius: 12px; padding: 1.75rem; margin-bottom: 1.25rem; }
+    .q-label { color: #3dd6b5; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.6rem; }
+    .q-text { font-size: 1.05rem; line-height: 1.65; }
+    .options { display: flex; flex-direction: column; gap: 0.7rem; }
+    .opt { background: #13252a; border: 2px solid #1e3a3a; color: #ddd; padding: 0.9rem 1.3rem; border-radius: 9px; cursor: pointer; text-align: left; font-size: 0.98rem; transition: all 0.15s; }
+    .opt:hover:not(.locked) { border-color: #3dd6b5; color: #fff; }
+    .opt.correct { border-color: #3dd6b5 !important; background: #0a2e25; color: #3dd6b5; }
+    .opt.wrong   { border-color: #e94560 !important; background: #2e0a15; color: #e94560; }
+    .opt.locked  { cursor: not-allowed; }
+    .explanation { background: #0a2025; border: 1px solid #3dd6b5; border-radius: 9px; padding: 1rem 1.3rem; margin-top: 1rem; color: #9de8d8; font-size: 0.9rem; line-height: 1.55; display: none; }
+    .explanation.show { display: block; }
+    .quiz-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.25rem; }
+    .quiz-score-lbl { color: #666; font-size: 0.9rem; }
+    .next-btn { background: #3dd6b5; border: none; color: #0f1a1a; padding: 0.65rem 1.4rem; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; display: none; transition: background 0.15s; }
+    .next-btn:hover { background: #2ab89a; }
+
+    /* ── RESULTS ── */
+    #results { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; text-align: center; }
+    .score-ring { width: 160px; height: 160px; border-radius: 50%; border: 7px solid #3dd6b5; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 1.75rem; }
+    .score-pct { font-size: 2.8rem; font-weight: 700; color: #3dd6b5; line-height: 1; }
+    .score-frac { color: #888; font-size: 0.9rem; margin-top: 0.3rem; }
+    #result-title { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    #result-msg { color: #888; margin-bottom: 2rem; }
+    .result-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .res-btn { padding: 0.75rem 1.5rem; border-radius: 9px; font-size: 1rem; cursor: pointer; border: 2px solid; transition: all 0.15s; }
+    .res-btn.primary { background: #3dd6b5; border-color: #3dd6b5; color: #0f1a1a; font-weight: 600; }
+    .res-btn.primary:hover { background: #2ab89a; }
+    .res-btn.secondary { background: none; border-color: #444; color: #aaa; }
+    .res-btn.secondary:hover { border-color: #aaa; color: #fff; }
+  </style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home">
+  <h1>Privacy Law Study</h1>
+  <p class="subtitle">Federal Laws &middot; Privacy Torts &middot; Kinds of Privacy &middot; GDPR &middot; Digital Age</p>
+  <div class="stats">
+    <div class="stat"><div class="num" id="stat-cards">0</div><div class="lbl">Flashcards</div></div>
+    <div class="stat"><div class="num" id="stat-quiz">0</div><div class="lbl">Quiz Questions</div></div>
+    <div class="stat"><div class="num">7</div><div class="lbl">Topics</div></div>
+  </div>
+  <div class="mode-btns">
+    <button class="mode-btn" onclick="startFlashcards()"><span class="icon">🃏</span>Flashcards</button>
+    <button class="mode-btn" onclick="startQuiz()"><span class="icon">📝</span>Quiz</button>
+  </div>
+</div>
+
+<!-- FLASHCARD MODE -->
+<div class="screen" id="fc-screen">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">← Home</button>
+    <h2>Flashcards</h2>
+  </div>
+  <div class="cat-strip" id="cat-strip"></div>
+  <div class="card-wrap">
+    <div class="card-counter" id="card-counter"></div>
+    <div class="flashcard" id="flashcard" onclick="flipCard()">
+      <div class="fc-inner">
+        <div class="fc-front">
+          <div class="fc-tag" id="fc-tag-f"></div>
+          <div class="fc-text" id="fc-front-text"></div>
+          <div class="fc-hint">Click to reveal answer</div>
+        </div>
+        <div class="fc-back">
+          <div class="fc-tag" id="fc-tag-b"></div>
+          <div class="fc-text" id="fc-back-text"></div>
+          <div class="fc-hint">Click to flip back</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-nav">
+      <button class="nav-btn" id="prev-btn" onclick="prevCard()">← Prev</button>
+      <button class="shuf-btn" onclick="shuffleCards()">Shuffle</button>
+      <button class="nav-btn" id="next-btn" onclick="nextCard()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ MODE -->
+<div class="screen" id="quiz-screen">
+  <div class="top-bar">
+    <button class="back-btn" onclick="showHome()">← Home</button>
+    <h2>Quiz</h2>
+  </div>
+  <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+  <div class="q-box">
+    <div class="q-label" id="q-label"></div>
+    <div class="q-text" id="q-text"></div>
+  </div>
+  <div class="options" id="options"></div>
+  <div class="explanation" id="explanation"></div>
+  <div class="quiz-footer">
+    <div class="quiz-score-lbl" id="q-score"></div>
+    <button class="next-btn" id="next-btn-q" onclick="nextQuestion()">Next →</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results">
+  <div class="score-ring">
+    <div class="score-pct" id="res-pct"></div>
+    <div class="score-frac" id="res-frac"></div>
+  </div>
+  <h2 id="result-title"></h2>
+  <p id="result-msg"></p>
+  <div class="result-actions">
+    <button class="res-btn primary" onclick="startQuiz()">Retake Quiz</button>
+    <button class="res-btn secondary" onclick="showHome()">Home</button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────
+// FLASHCARD DATA
+// ─────────────────────────────────────────
+const CARDS = [
+
+  // ── Introduction to Privacy Law ──
+  { cat: "Intro to Privacy", front: "Legal definition of privacy:", back: "Control over personal information — the right of individuals to determine how their personal data is collected, used, and shared." },
+  { cat: "Intro to Privacy", front: "Which two constitutional amendments form the legal foundation of privacy law?", back: "4th Amendment — protects against unreasonable searches and seizures.\n\n14th Amendment — due process and equal protection can apply to privacy rights." },
+  { cat: "Intro to Privacy", front: "What is informational self-determination?", back: "The right to control one's own personal data — including who can collect it, how it is used, and who it is shared with." },
+  { cat: "Intro to Privacy", front: "How do Big Data and AI affect privacy?", back: "They enable automated collection and analysis of vast personal information, risking:\n• Profiling and bias in decision-making\n• Loss of individual control over personal data\n• Surveillance at scale" },
+
+  // ── Historical Evolution ──
+  { cat: "Historical Evolution", front: "Who introduced 'The Right to Privacy' and when?", back: "Louis Brandeis and Samuel Warren in 1890 — their law review article is considered the foundation of modern privacy law." },
+  { cat: "Historical Evolution", front: "What drove the growth of data protection laws in the 1960s–70s?", back: "Government surveillance concerns — legislatures responded by creating legal frameworks to limit how the government could collect and use personal data." },
+  { cat: "Historical Evolution", front: "What drove stronger federal privacy regulations in the 1990s–2000s?", back: "The Internet boom — rapid expansion of online services led to new risks for personal data, prompting Congress to pass laws like COPPA, GLBA, and HIPAA." },
+  { cat: "Historical Evolution", front: "What are the current focuses of privacy law today?", back: "• Digital privacy\n• AI ethics\n• Cybersecurity\n• Biometric data protection\n• Balancing national security vs. individual privacy" },
+
+  // ── Major Federal Privacy Laws ──
+  { cat: "Federal Privacy Laws", front: "Privacy Act of 1974", back: "Limits the federal government's collection and use of personal data.\n\nRequires government agencies to:\n• Tell individuals why data is collected\n• Allow individuals to access and correct their records\n• Limit data sharing to authorized purposes" },
+  { cat: "Federal Privacy Laws", front: "Electronic Communications Privacy Act (ECPA) — 1986", back: "Protects electronic communications from unauthorized government access.\n\nCovers wiretapping, electronic data stored by third parties, and pen register/trap-and-trace devices.\n\nOften criticized as outdated for the modern internet era." },
+  { cat: "Federal Privacy Laws", front: "Children's Online Privacy Protection Act (COPPA) — 1998", back: "Regulates online data collection for children under 13.\n\nRequires verifiable parental consent before collecting personal information from children.\n\nPenalties: Civil fines up to $43,280 per violation." },
+  { cat: "Federal Privacy Laws", front: "Gramm-Leach-Bliley Act (GLBA) — 1999", back: "Governs financial institutions' handling of private data.\n\nRequires institutions to:\n• Protect security and confidentiality of customer data\n• Notify customers of privacy practices\n• Restrict sharing of nonpublic personal information" },
+  { cat: "Federal Privacy Laws", front: "Health Insurance Portability and Accountability Act (HIPAA) — 1996", back: "Protects medical records and personal health information.\n\nRequires healthcare organizations to:\n• Implement safeguards for electronic health info\n• Conduct risk assessments\n• Report data breaches\n\nPenalties: Up to $1.5 million per violation category per year." },
+  { cat: "Federal Privacy Laws", front: "California Consumer Privacy Act (CCPA) — 2018", back: "Grants California residents data control rights similar to GDPR:\n• Right to know what data is collected\n• Right to delete personal data\n• Right to opt out of data sales\n• Right to non-discrimination for exercising rights" },
+  { cat: "Federal Privacy Laws", front: "Which federal law protects electronic communications from unauthorized government access?", back: "ECPA — Electronic Communications Privacy Act (1986)" },
+  { cat: "Federal Privacy Laws", front: "Which law limits government collection and use of personal data?", back: "Privacy Act of 1974" },
+  { cat: "Federal Privacy Laws", front: "Which law grants California residents GDPR-like data rights?", back: "CCPA — California Consumer Privacy Act (2018)" },
+
+  // ── Privacy Torts ──
+  { cat: "Privacy Torts", front: "What are the 4 privacy torts?", back: "1. Intrusion Upon Seclusion\n2. Public Disclosure of Private Facts\n3. False Light\n4. Appropriation of Name or Likeness" },
+  { cat: "Privacy Torts", front: "Intrusion Upon Seclusion", back: "Occurs when: Someone intentionally intrudes into another person's private matters in a highly offensive way.\n\nExamples: Unauthorized surveillance, hacking, secretly recording private conversations.\n\nDefenses: No reasonable expectation of privacy, consent given." },
+  { cat: "Privacy Torts", front: "Public Disclosure of Private Facts", back: "Occurs when: Private, embarrassing, or sensitive information is publicized in an offensive way.\n\nExamples: Publishing intimate photos, exposing private medical conditions, revealing financial data.\n\nDefenses: Information was already public, newsworthiness, consent given." },
+  { cat: "Privacy Torts", front: "False Light", back: "Occurs when: Misleading or false information is spread about someone in a way that distorts their public image.\n\nExamples: Misleading headlines implying criminal behavior, edited photos misrepresenting actions.\n\nDefenses: Truth, no significant damage caused." },
+  { cat: "Privacy Torts", front: "Appropriation of Name or Likeness", back: "Occurs when: Someone's identity (name, image, voice) is used for commercial gain without consent.\n\nExamples: Using a celebrity's photo in an advertisement, creating deepfake videos for profit.\n\nDefenses: Newsworthiness, parody/satire, consent given." },
+  { cat: "Privacy Torts", front: "A company uses a celebrity's photo in an advertisement without permission. Which privacy tort applies?", back: "Appropriation of Name or Likeness — using someone's identity for commercial gain without consent." },
+  { cat: "Privacy Torts", front: "A tabloid publishes a misleading headline falsely implying a person committed a crime. Which privacy tort applies?", back: "False Light — spreading misleading information that distorts someone's public image." },
+  { cat: "Privacy Torts", front: "A hacker secretly records someone's private conversations. Which privacy tort applies?", back: "Intrusion Upon Seclusion — intentionally intruding into private matters in a highly offensive way." },
+  { cat: "Privacy Torts", front: "What defense applies to ALL four privacy torts?", back: "Consent — if the person gave consent for the disclosure or use of their information/identity, the privacy tort claim generally fails." },
+
+  // ── Kinds of Privacy ──
+  { cat: "Kinds of Privacy", front: "List the 6 kinds of privacy recognized in the U.S.:", back: "1. Information Privacy — protection of personal data from unauthorized collection/use\n2. Bodily Privacy — protection from invasive procedures or searches\n3. Communications Privacy — right to private correspondence\n4. Territorial Privacy — protection from intrusion into personal spaces\n5. Financial Privacy — protection of banking and financial records\n6. Medical Privacy — protection of health records and medical information" },
+  { cat: "Kinds of Privacy", front: "Information Privacy", back: "Protection of personal data from unauthorized collection and use.\n\nExamples: Data protection laws like HIPAA, COPPA, and GDPR all address information privacy." },
+  { cat: "Kinds of Privacy", front: "Bodily Privacy", back: "Protection from invasive physical procedures or searches.\n\nExamples: Drug testing, TSA searches, medical examinations without consent." },
+  { cat: "Kinds of Privacy", front: "Communications Privacy", back: "The right to private correspondence — including phone calls, emails, texts, and online messages.\n\nExamples: ECPA (1986) protects electronic communications from unauthorized government access." },
+  { cat: "Kinds of Privacy", front: "Territorial Privacy", back: "Protection from government or corporate intrusion into personal spaces — home, office, personal devices.\n\nExamples: 4th Amendment protections, smart home device data." },
+  { cat: "Kinds of Privacy", front: "Financial Privacy", back: "Protection of banking and financial records from unauthorized access or disclosure.\n\nExamples: GLBA requires financial institutions to protect customer financial data." },
+  { cat: "Kinds of Privacy", front: "Medical Privacy", back: "Protection of health records and personal medical information.\n\nExamples: HIPAA governs who can access and share medical records and health data." },
+
+  // ── Digital Age Challenges ──
+  { cat: "Digital Age", front: "4 major privacy challenges in the digital age:", back: "1. AI & Big Data — automated profiling, bias, mass data collection\n2. Social Media — complex, frequently changing privacy settings\n3. Cybersecurity Threats — data breaches expose sensitive personal information\n4. Workplace Privacy — employee monitoring and data collection on the rise" },
+  { cat: "Digital Age", front: "How does AI & Big Data threaten privacy?", back: "Automated decision-making systems can:\n• Profile individuals without their knowledge\n• Introduce bias into decisions (hiring, lending, law enforcement)\n• Enable surveillance at a scale previously impossible" },
+  { cat: "Digital Age", front: "What privacy risks does social media create?", back: "• Privacy settings are complex and frequently changed by platforms\n• Users often unknowingly share more data than intended\n• Third-party apps and advertisers can access personal data\n• Data shared online is difficult to permanently remove" },
+  { cat: "Digital Age", front: "What are future trends and emerging privacy issues?", back: "• AI and algorithmic privacy risks\n• Biometric data protection (facial recognition, fingerprints)\n• Federal data privacy law proposals\n• Balancing security vs. privacy in national policy" },
+
+  // ── International Privacy Law ──
+  { cat: "International Law", front: "What is GDPR?", back: "General Data Protection Regulation — EU law that establishes strict data protection rules.\n\nKey principles:\n• Lawful basis required for data processing\n• Right to access, correct, and delete personal data\n• Data breach notification requirements\n• Significant fines for non-compliance (up to 4% of global revenue)" },
+  { cat: "International Law", front: "GDPR opt-in vs. U.S. opt-out — what's the difference?", back: "GDPR (opt-in): Users must actively consent before their data is collected or processed.\n\nU.S. laws (opt-out): Data is collected by default; users must take action to stop it.\n\nThis is a fundamental philosophical difference in how each system approaches privacy." },
+  { cat: "International Law", front: "How does GDPR impact U.S. companies?", back: "U.S. companies must comply with GDPR when handling data of EU citizens — even if the company is based in the U.S.\n\nThis means many U.S. firms must:\n• Appoint a data protection officer\n• Update privacy policies\n• Implement GDPR-compliant data handling practices" },
+  { cat: "International Law", front: "True or False: GDPR only applies to companies physically located in the EU.", back: "False. GDPR applies to any company that handles data belonging to EU citizens, regardless of where the company is based.\n\nU.S. companies serving EU customers must comply." },
+];
+
+// ─────────────────────────────────────────
+// QUIZ DATA
+// ─────────────────────────────────────────
+const QUIZ = [
+  // ── Intro & History ──
+  {
+    q: "What is the legal definition of privacy?",
+    opts: ["The right to remain silent in court", "Control over personal information", "Freedom from government surveillance only", "The right to anonymous voting"],
+    ans: 1,
+    exp: "Privacy is legally defined as control over personal information — the right to determine how one's data is collected, used, and shared."
+  },
+  {
+    q: "Which two constitutional amendments form the primary legal foundation of privacy rights?",
+    opts: ["1st and 5th Amendments", "2nd and 6th Amendments", "4th and 14th Amendments", "3rd and 8th Amendments"],
+    ans: 2,
+    exp: "Privacy law is rooted in the 4th Amendment (protection against unreasonable searches and seizures) and the 14th Amendment (due process and equal protection)."
+  },
+  {
+    q: "What is 'informational self-determination'?",
+    opts: ["The government's right to classify personal data", "The right to control one's own personal data", "A court's authority to seal records", "The right to remain anonymous online"],
+    ans: 1,
+    exp: "Informational self-determination is the right of individuals to control their own personal data — including who collects it, how it is used, and who it is shared with."
+  },
+  {
+    q: "Who introduced the concept of 'The Right to Privacy' in 1890?",
+    opts: ["Oliver Wendell Holmes and Thurgood Marshall", "Louis Brandeis and Samuel Warren", "John Marshall and James Madison", "Benjamin Cardozo and Learned Hand"],
+    ans: 1,
+    exp: "Louis Brandeis and Samuel Warren introduced the concept of 'The Right to Privacy' in their 1890 Harvard Law Review article, which is considered the foundation of modern privacy law."
+  },
+  {
+    q: "What primarily drove the growth of data protection laws in the 1960s and 70s?",
+    opts: ["Corporate data breaches", "Government surveillance concerns", "The rise of social media", "International trade agreements"],
+    ans: 1,
+    exp: "The 1960s-70s saw growth of data protection laws in direct response to government surveillance — legislatures created frameworks to limit how the government could collect and use personal data."
+  },
+  {
+    q: "What event in the 1990s-2000s drove stronger federal privacy regulations?",
+    opts: ["The Cold War ending", "The dot-com stock market crash", "The Internet boom", "The September 11 attacks"],
+    ans: 2,
+    exp: "The Internet boom of the 1990s-2000s led to stronger federal privacy regulations, as rapid expansion of online services created new risks for personal data."
+  },
+
+  // ── Federal Privacy Laws ──
+  {
+    q: "Which federal law limits the government's collection and use of personal data about U.S. citizens?",
+    opts: ["ECPA", "GLBA", "Privacy Act of 1974", "HIPAA"],
+    ans: 2,
+    exp: "The Privacy Act of 1974 limits federal government collection and use of personal data, giving individuals rights to access and correct their records."
+  },
+  {
+    q: "Which federal law protects electronic communications from unauthorized government access?",
+    opts: ["Privacy Act of 1974", "ECPA (1986)", "GLBA (1999)", "CCPA (2018)"],
+    ans: 1,
+    exp: "The Electronic Communications Privacy Act (ECPA, 1986) protects electronic communications from unauthorized government access, covering wiretapping and stored electronic data."
+  },
+  {
+    q: "The California Consumer Privacy Act (CCPA) grants California residents rights similar to which international law?",
+    opts: ["Canada's PIPEDA", "EU's GDPR", "UK's Data Protection Act", "Australia's Privacy Act"],
+    ans: 1,
+    exp: "The CCPA (2018) grants California residents data control rights similar to those under the EU's GDPR, including rights to access, delete, and opt out of data sales."
+  },
+  {
+    q: "True or False: HIPAA applies to any business that collects health information.",
+    opts: ["True", "False"],
+    ans: 1,
+    exp: "False. HIPAA applies specifically to covered entities — healthcare providers, health plans, and healthcare clearinghouses — and their business associates. Not all businesses collecting health data are covered."
+  },
+  {
+    q: "Which law governs financial institutions' handling of customer private data?",
+    opts: ["HIPAA", "ECPA", "GLBA", "COPPA"],
+    ans: 2,
+    exp: "The Gramm-Leach-Bliley Act (GLBA, 1999) governs financial institutions' handling of private customer data, requiring security programs and limiting data sharing."
+  },
+  {
+    q: "Which federal law regulates online data collection for children under 13?",
+    opts: ["HIPAA", "GLBA", "ECPA", "COPPA"],
+    ans: 3,
+    exp: "COPPA (Children's Online Privacy Protection Act, 1998) regulates online data collection for children under 13, requiring verifiable parental consent before collecting their personal information."
+  },
+
+  // ── Privacy Torts ──
+  {
+    q: "Which privacy tort occurs when someone intentionally intrudes into another person's private matters in a highly offensive way?",
+    opts: ["False Light", "Appropriation of Name or Likeness", "Intrusion Upon Seclusion", "Public Disclosure of Private Facts"],
+    ans: 2,
+    exp: "Intrusion Upon Seclusion occurs when someone intentionally intrudes into private matters in a highly offensive way — examples include unauthorized surveillance, hacking, or secretly recording private conversations."
+  },
+  {
+    q: "A newspaper publishes a person's private medical records without consent. Which privacy tort applies?",
+    opts: ["False Light", "Appropriation of Name or Likeness", "Intrusion Upon Seclusion", "Public Disclosure of Private Facts"],
+    ans: 3,
+    exp: "Public Disclosure of Private Facts — publicizing private, embarrassing, or sensitive information (like medical records) in an offensive way constitutes this tort."
+  },
+  {
+    q: "A company uses a famous athlete's image in an advertisement without permission. Which privacy tort applies?",
+    opts: ["False Light", "Appropriation of Name or Likeness", "Intrusion Upon Seclusion", "Public Disclosure of Private Facts"],
+    ans: 1,
+    exp: "Appropriation of Name or Likeness occurs when someone's identity is used for commercial gain without consent — using a celebrity's image in an advertisement is a classic example."
+  },
+  {
+    q: "A tabloid runs a misleading headline falsely implying a person committed fraud. Which privacy tort applies?",
+    opts: ["False Light", "Appropriation of Name or Likeness", "Intrusion Upon Seclusion", "Public Disclosure of Private Facts"],
+    ans: 0,
+    exp: "False Light — spreading misleading or false information about someone in a way that distorts their public image. Misleading headlines implying criminal behavior are a key example."
+  },
+  {
+    q: "Which defense applies to a claim of Public Disclosure of Private Facts if the information was already publicly known?",
+    opts: ["Truth", "The information was already public", "Parody/satire", "No reasonable expectation of privacy"],
+    ans: 1,
+    exp: "If the information was already public, a Public Disclosure of Private Facts claim generally fails — you cannot claim privacy over information that was already in the public domain. Newsworthiness and consent are also defenses."
+  },
+  {
+    q: "True or False: Consent is a valid defense to all four privacy torts.",
+    opts: ["True", "False"],
+    ans: 0,
+    exp: "True. Consent is a defense across all four privacy torts. If a person gave consent for the use of their information or identity, a privacy tort claim generally cannot succeed."
+  },
+  {
+    q: "Creating a deepfake video of a celebrity for commercial profit without their permission is an example of which privacy tort?",
+    opts: ["False Light", "Appropriation of Name or Likeness", "Intrusion Upon Seclusion", "Public Disclosure of Private Facts"],
+    ans: 1,
+    exp: "Appropriation of Name or Likeness — using someone's identity (including digitally generated likenesses) for commercial gain without consent."
+  },
+  {
+    q: "Which is a valid defense to False Light?",
+    opts: ["The person is a public figure", "The information was already public", "Truth", "Newsworthiness"],
+    ans: 2,
+    exp: "Truth is the primary defense to False Light — if the information published is accurate, a False Light claim cannot succeed. No significant damage caused is also a defense."
+  },
+
+  // ── Kinds of Privacy ──
+  {
+    q: "Which kind of privacy protects personal data from unauthorized collection and use?",
+    opts: ["Bodily Privacy", "Territorial Privacy", "Information Privacy", "Communications Privacy"],
+    ans: 2,
+    exp: "Information Privacy is the protection of personal data from unauthorized collection and use — addressed by laws like HIPAA, COPPA, and GDPR."
+  },
+  {
+    q: "Which kind of privacy protects the right to private correspondence, emails, and messages?",
+    opts: ["Territorial Privacy", "Financial Privacy", "Bodily Privacy", "Communications Privacy"],
+    ans: 3,
+    exp: "Communications Privacy is the right to private correspondence — covering phone calls, emails, texts, and online messages. ECPA (1986) is the primary federal law protecting this kind of privacy."
+  },
+  {
+    q: "A government agency requires mandatory drug testing of all employees without cause. Which kind of privacy is most at issue?",
+    opts: ["Information Privacy", "Bodily Privacy", "Financial Privacy", "Territorial Privacy"],
+    ans: 1,
+    exp: "Bodily Privacy — the protection from invasive physical procedures or searches. Mandatory drug testing without cause raises bodily privacy concerns."
+  },
+  {
+    q: "Protection of banking and financial records falls under which kind of privacy?",
+    opts: ["Medical Privacy", "Communications Privacy", "Financial Privacy", "Territorial Privacy"],
+    ans: 2,
+    exp: "Financial Privacy is the protection of banking and financial records from unauthorized access or disclosure. GLBA is the primary federal law addressing financial privacy."
+  },
+  {
+    q: "How many kinds of privacy are recognized in the U.S.?",
+    opts: ["3", "4", "5", "6"],
+    ans: 3,
+    exp: "Six kinds of privacy are recognized: Information, Bodily, Communications, Territorial, Financial, and Medical privacy."
+  },
+
+  // ── GDPR & International Law ──
+  {
+    q: "True or False: GDPR only applies to companies physically located within the European Union.",
+    opts: ["True", "False"],
+    ans: 1,
+    exp: "False. GDPR applies to any company that handles data of EU citizens, regardless of where the company is based. U.S. companies serving EU customers must comply with GDPR."
+  },
+  {
+    q: "GDPR uses an opt-in model. What does this mean?",
+    opts: ["Users are automatically enrolled and must opt out to stop data collection", "Users must actively consent before their data is collected or processed", "Companies must opt in to data sharing agreements", "Users opt in after their data has already been collected"],
+    ans: 1,
+    exp: "GDPR uses an opt-in model — users must actively and explicitly consent before their data is collected or processed. This contrasts with U.S. laws, which typically use an opt-out model."
+  },
+  {
+    q: "How do most U.S. privacy laws differ from GDPR's consent model?",
+    opts: ["U.S. laws use opt-in; GDPR uses opt-out", "U.S. laws use opt-out; GDPR uses opt-in", "Both use opt-in models", "Both use opt-out models"],
+    ans: 1,
+    exp: "U.S. laws typically use an opt-out model — data is collected by default and users must take action to stop it. GDPR uses opt-in, requiring explicit user consent before data collection."
+  },
+  {
+    q: "Which of the following is a key right granted under GDPR?",
+    opts: ["The right to remain silent", "The right to access, correct, and delete personal data", "The right to sue employers for wage theft", "The right to anonymous internet browsing"],
+    ans: 1,
+    exp: "GDPR grants individuals the right to access their personal data, correct inaccurate data, and request deletion of their data ('right to be forgotten'), among other rights."
+  },
+
+  // ── Digital Age ──
+  {
+    q: "Which of the following is NOT listed as a major privacy challenge in the digital age?",
+    opts: ["AI & Big Data profiling", "Social media privacy settings", "Workplace employee monitoring", "International trade tariffs"],
+    ans: 3,
+    exp: "International trade tariffs are not a privacy challenge. The four major digital age privacy challenges are: AI & Big Data, social media, cybersecurity threats, and workplace privacy/employee monitoring."
+  },
+  {
+    q: "True or False: AI and Big Data primarily improve privacy by making data more secure.",
+    opts: ["True", "False"],
+    ans: 1,
+    exp: "False. While AI can help with security, AI and Big Data create significant privacy risks — including automated profiling, bias in decision-making, and large-scale surveillance that individuals cannot easily detect or control."
+  },
+  {
+    q: "Which is an emerging future privacy issue specifically related to physical human characteristics?",
+    opts: ["Social media data mining", "Biometric data protection", "Email encryption standards", "Opt-out advertising models"],
+    ans: 1,
+    exp: "Biometric data protection is an emerging privacy issue involving physical characteristics like facial recognition, fingerprints, and iris scans — data that cannot be changed if compromised."
+  },
+];
+
+// ─────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────
+let cards = [...CARDS];
+let cardIdx = 0;
+let activeCat = "All";
+let quizList = [];
+let qIdx = 0;
+let score = 0;
+let answered = false;
+
+document.getElementById('stat-cards').textContent = CARDS.length;
+document.getElementById('stat-quiz').textContent = QUIZ.length;
+
+// ─────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────
+function showHome() {
+  document.getElementById('home').style.display = 'flex';
+  document.getElementById('fc-screen').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+}
+
+// ─────────────────────────────────────────
+// FLASHCARDS
+// ─────────────────────────────────────────
+function startFlashcards() {
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('fc-screen').style.display = 'block';
+  activeCat = 'All';
+  buildCatStrip();
+  filterCards('All');
+}
+
+function buildCatStrip() {
+  const cats = ['All', ...new Set(CARDS.map(c => c.cat))];
+  document.getElementById('cat-strip').innerHTML = cats.map(c =>
+    `<button class="cat-btn${c === activeCat ? ' active' : ''}" onclick="filterCards('${c}')">${c}</button>`
+  ).join('');
+}
+
+function filterCards(cat) {
+  activeCat = cat;
+  cards = cat === 'All' ? [...CARDS] : CARDS.filter(c => c.cat === cat);
+  cardIdx = 0;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.textContent === cat));
+  renderCard();
+}
+
+function renderCard() {
+  const c = cards[cardIdx];
+  document.getElementById('card-counter').textContent = `${cardIdx + 1} / ${cards.length}`;
+  document.getElementById('fc-tag-f').textContent = c.cat;
+  document.getElementById('fc-tag-b').textContent = c.cat;
+  document.getElementById('fc-front-text').textContent = c.front;
+  document.getElementById('fc-back-text').textContent = c.back;
+  document.getElementById('flashcard').classList.remove('flipped');
+  document.getElementById('prev-btn').disabled = cardIdx === 0;
+  document.getElementById('next-btn').disabled = cardIdx === cards.length - 1;
+}
+
+function flipCard() { document.getElementById('flashcard').classList.toggle('flipped'); }
+function nextCard() { if (cardIdx < cards.length - 1) { cardIdx++; renderCard(); } }
+function prevCard() { if (cardIdx > 0) { cardIdx--; renderCard(); } }
+
+function shuffleCards() {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  cardIdx = 0;
+  renderCard();
+}
+
+// ─────────────────────────────────────────
+// QUIZ
+// ─────────────────────────────────────────
+function startQuiz() {
+  document.getElementById('home').style.display = 'none';
+  document.getElementById('quiz-screen').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  quizList = [...QUIZ].sort(() => Math.random() - 0.5);
+  qIdx = 0; score = 0;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const q = quizList[qIdx];
+  const total = quizList.length;
+  document.getElementById('prog-fill').style.width = `${(qIdx / total) * 100}%`;
+  document.getElementById('q-label').textContent = `Question ${qIdx + 1} of ${total}`;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('q-score').textContent = `Score: ${score} / ${qIdx}`;
+  document.getElementById('next-btn-q').style.display = 'none';
+  document.getElementById('explanation').className = 'explanation';
+  document.getElementById('options').innerHTML = q.opts.map((o, i) =>
+    `<button class="opt" onclick="selectAnswer(${i})">${o}</button>`
+  ).join('');
+}
+
+function selectAnswer(idx) {
+  if (answered) return;
+  answered = true;
+  const q = quizList[qIdx];
+  const opts = document.querySelectorAll('.opt');
+  opts.forEach(o => o.classList.add('locked'));
+  opts[q.ans].classList.add('correct');
+  if (idx === q.ans) score++;
+  else opts[idx].classList.add('wrong');
+  document.getElementById('q-score').textContent = `Score: ${score} / ${qIdx + 1}`;
+  const exp = document.getElementById('explanation');
+  exp.textContent = q.exp;
+  exp.classList.add('show');
+  document.getElementById('next-btn-q').style.display = 'block';
+}
+
+function nextQuestion() {
+  qIdx++;
+  if (qIdx >= quizList.length) showResults();
+  else renderQuestion();
+}
+
+function showResults() {
+  document.getElementById('quiz-screen').style.display = 'none';
+  document.getElementById('results').style.display = 'flex';
+  const total = quizList.length;
+  const pct = Math.round((score / total) * 100);
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-frac').textContent = `${score} / ${total}`;
+  const titles = pct >= 90 ? ["Excellent!", "Strong grasp of privacy law."]
+               : pct >= 75 ? ["Good Job!", "Review the ones you missed and you'll be set."]
+               : pct >= 60 ? ["Keep Studying", "Go over the flashcards for the topics you missed."]
+               :             ["Needs More Work", "Start with the flashcards, then come back to the quiz."];
+  document.getElementById('result-title').textContent = titles[0];
+  document.getElementById('result-msg').textContent = titles[1];
+}
+</script>
+</body>
+</html>

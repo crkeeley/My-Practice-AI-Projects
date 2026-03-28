@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Triage — Powered by Claude</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #f9fafb;
+      --surface:     #ffffff;
+      --border:      #e5e7eb;
+      --border-focus:#6366f1;
+      --text-primary:#111827;
+      --text-mid:    #374151;
+      --text-muted:  #6b7280;
+      --text-subtle: #9ca3af;
+      --indigo:      #6366f1;
+      --indigo-dark: #4f46e5;
+      --indigo-light:#ede9fe;
+      --radius:      10px;
+      --radius-sm:   6px;
+      --shadow:      0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --shadow-md:   0 4px 16px rgba(0,0,0,.10);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── TOP BAR ─────────────────────────────────────── */
+    .topbar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--text-primary);
+    }
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+    }
+    .brand-sub {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-muted);
+      background: #f3f4f6;
+      border-radius: 20px;
+      padding: 2px 8px;
+    }
+
+    /* ── MAIN LAYOUT ─────────────────────────────────── */
+    .layout {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* ── PANEL / CARD ────────────────────────────────── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-mid);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .panel-body { padding: 20px; }
+
+    /* ── FORM ELEMENTS ───────────────────────────────── */
+    .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .input-wrap { position: relative; }
+    input[type="password"], input[type="text"], textarea {
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      color: var(--text-primary);
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 12px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input[type="password"] { font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em; }
+    input:focus, textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+      background: #fff;
+    }
+    .key-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-subtle);
+      padding: 2px;
+      display: flex;
+      align-items: center;
+    }
+    .key-toggle:hover { color: var(--text-muted); }
+    .key-hint {
+      font-size: 11px;
+      color: var(--text-subtle);
+      margin-top: 4px;
+    }
+    textarea {
+      min-height: 240px;
+      resize: vertical;
+      line-height: 1.6;
+      font-size: 13px;
+    }
+    ::placeholder { color: #c4c7ce; }
+
+    .sep-hint {
+      font-size: 11.5px;
+      color: var(--text-subtle);
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sep-hint code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--text-mid);
+    }
+
+    .btn-triage {
+      font-family: 'Inter', sans-serif;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: #fff;
+      background: linear-gradient(135deg, var(--indigo), #8b5cf6);
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 10px 20px;
+      width: 100%;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .btn-triage:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--indigo-dark), #7c3aed);
+      box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+      transform: translateY(-1px);
+    }
+    .btn-triage:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-triage .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RIGHT COLUMN ────────────────────────────────── */
+    .results-col { min-width: 0; }
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .results-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .results-count {
+      font-size: 12px;
+      color: var(--text-muted);
+      background: #f3f4f6;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+
+    /* ── EMPTY / ERROR STATE ─────────────────────────── */
+    .state-box {
+      background: var(--surface);
+      border: 1.5px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 48px 24px;
+      text-align: center;
+    }
+    .state-box .icon {
+      font-size: 2.4rem;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+    .state-box h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-mid);
+      margin-bottom: 6px;
+    }
+    .state-box p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .error-box {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .error-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .error-msg { font-size: 13px; color: #b91c1c; line-height: 1.5; }
+
+    /* ── EMAIL CARDS ─────────────────────────────────── */
+    .cards-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .email-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.15s, transform 0.15s;
+      animation: slideIn 0.3s ease forwards;
+      opacity: 0;
+    }
+    .email-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-1px);
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .card-badges { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    /* Category colors */
+    .cat-Support    { background: #dbeafe; color: #1d4ed8; }
+    .cat-Vendor     { background: #ede9fe; color: #6d28d9; }
+    .cat-PR-Media   { background: #fce7f3; color: #be185d; }
+    .cat-Billing    { background: #ffedd5; color: #c2410c; }
+    .cat-Spam       { background: #fee2e2; color: #b91c1c; }
+    .cat-Other      { background: #f3f4f6; color: #374151; }
+
+    /* Priority colors */
+    .pri-Urgent { background: #fee2e2; color: #991b1b; }
+    .pri-Normal { background: #fef9c3; color: #854d0e; }
+    .pri-Low    { background: #dcfce7; color: #166534; }
+
+    .card-num {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-subtle);
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+
+    .card-first-line {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    .card-divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+    .response-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .response-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+      padding-top: 1px;
+      min-width: 60px;
+    }
+    .response-text {
+      font-size: 13px;
+      color: var(--indigo-dark);
+      font-style: italic;
+      line-height: 1.5;
+    }
+    .copy-btn {
+      margin-left: auto;
+      flex-shrink: 0;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .copy-btn:hover { border-color: var(--indigo); color: var(--indigo); }
+    .copy-btn.copied { border-color: #16a34a; color: #16a34a; }
+
+    /* ── SUMMARY ROW ─────────────────────────────────── */
+    .summary-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .summary-chip {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow);
+    }
+    .chip-val {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+    .chip-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .chip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 760px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── TOP BAR ──────────────────────────────────────── -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">✉</div>
+    Email Triage
+    <span class="brand-sub">Powered by Claude</span>
+  </div>
+</header>
+
+<!-- ── LAYOUT ───────────────────────────────────────── -->
+<div class="layout">
+
+  <!-- LEFT: Input Panel -->
+  <div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Configuration</span>
+      </div>
+      <div class="panel-body">
+        <div class="field">
+          <label for="api-key">Anthropic API Key</label>
+          <div class="input-wrap">
+            <input type="password" id="api-key" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+            <button class="key-toggle" onclick="toggleKey()" title="Show/hide key" tabindex="-1">
+              <svg id="eye-icon" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </button>
+          </div>
+          <div class="key-hint">Stored locally in your browser. Never sent anywhere except Anthropic.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px;">
+      <div class="panel-header">
+        <span class="panel-title">Emails to Triage</span>
+      </div>
+      <div class="panel-body">
+        <div class="field">
+          <label for="email-input">Paste emails below</label>
+          <textarea id="email-input" placeholder="From: support@acme.com
+Subject: Product broken after update
+Hi, our integration stopped working after your latest release…
+
+---
+
+From: press@techcrunch.com
+Subject: Story request: AI startup coverage
+Hi, I'm a journalist at TechCrunch writing about…
+
+---
+
+From: billing@stripe.com
+Subject: Invoice #INV-2024-003
+Your monthly invoice for $299 is now available…"></textarea>
+          <div class="sep-hint">Separate emails with <code>---</code> on its own line</div>
+        </div>
+        <button class="btn-triage" id="triage-btn" onclick="runTriage()">
+          <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Triage Emails
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Results -->
+  <div class="results-col" id="results-col">
+    <!-- Populated by JS -->
+    <div class="state-box">
+      <div class="icon">📬</div>
+      <h3>No emails triaged yet</h3>
+      <p>Paste your emails on the left, add your API key,<br>and click <strong>Triage Emails</strong> to get started.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ── Persist API key ────────────────────────────────────
+  const keyInput  = document.getElementById('api-key');
+  const emailArea = document.getElementById('email-input');
+
+  const saved = localStorage.getItem('anthropic_api_key');
+  if (saved) keyInput.value = saved;
+  keyInput.addEventListener('input', () => {
+    localStorage.setItem('anthropic_api_key', keyInput.value.trim());
+  });
+
+  function toggleKey() {
+    const t = keyInput.type === 'password' ? 'text' : 'password';
+    keyInput.type = t;
+  }
+
+  // ── Category & Priority config ─────────────────────────
+  const CAT_CLASS = {
+    'Support':  'cat-Support',
+    'Vendor':   'cat-Vendor',
+    'PR/Media': 'cat-PR-Media',
+    'Billing':  'cat-Billing',
+    'Spam':     'cat-Spam',
+    'Other':    'cat-Other',
+  };
+  const PRI_CLASS = { 'Urgent': 'pri-Urgent', 'Normal': 'pri-Normal', 'Low': 'pri-Low' };
+  const PRI_DOT   = { 'Urgent': '#dc2626',    'Normal': '#d97706',    'Low': '#16a34a' };
+
+  // ── Main triage function ───────────────────────────────
+  async function runTriage() {
+    const apiKey = keyInput.value.trim();
+    const raw    = emailArea.value.trim();
+
+    if (!apiKey) { showError('Please enter your Anthropic API key.'); return; }
+    if (!raw)    { showError('Please paste at least one email.'); return; }
+
+    setLoading(true);
+    clearResults();
+
+    const systemPrompt = `You are an expert email triage assistant.
+
+The user will provide a batch of emails separated by "---" on its own line.
+Analyze each email and return a JSON array — one object per email — with exactly these fields:
+- "index": integer, 1-based position in the batch
+- "first_line": string, the first meaningful line (subject line or opening sentence, max 90 chars)
+- "category": exactly one of: Support, Vendor, PR/Media, Billing, Spam, Other
+- "priority": exactly one of: Urgent, Normal, Low
+- "response_starter": string, a single professional sentence to begin a reply (max 120 chars)
+
+Priority guidelines:
+- Urgent: requires a response within hours (outages, legal, angry clients, overdue payments)
+- Normal: standard business communication, reply within a day
+- Low: newsletters, FYIs, no action needed soon
+
+Return ONLY a valid JSON array. No markdown fences, no explanation, no extra text.`;
+
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type':           'application/json',
+          'x-api-key':              apiKey,
+          'anthropic-version':      '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true',
+        },
+        body: JSON.stringify({
+          model:      'claude-opus-4-6',
+          max_tokens: 2048,
+          system:     systemPrompt,
+          messages:   [{ role: 'user', content: raw }],
+        }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        const msg = err?.error?.message || `HTTP ${resp.status}: ${resp.statusText}`;
+        showError(msg);
+        return;
+      }
+
+      const data = await resp.json();
+      const text = data?.content?.[0]?.text ?? '';
+
+      let emails;
+      try {
+        // Strip any accidental markdown fences
+        const clean = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+        emails = JSON.parse(clean);
+        if (!Array.isArray(emails)) throw new Error('Expected a JSON array');
+      } catch (e) {
+        showError(`Could not parse Claude's response as JSON. Raw response:\n\n${text}`);
+        return;
+      }
+
+      renderCards(emails);
+
+    } catch (e) {
+      if (e.name === 'TypeError' && e.message.includes('fetch')) {
+        showError('Network error — check your internet connection or CORS settings.');
+      } else {
+        showError(e.message || String(e));
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── Render cards ───────────────────────────────────────
+  function renderCards(emails) {
+    const col = document.getElementById('results-col');
+    col.innerHTML = '';
+
+    // Summary row
+    const urgentCount  = emails.filter(e => e.priority === 'Urgent').length;
+    const catMap = {};
+    emails.forEach(e => { catMap[e.category] = (catMap[e.category] || 0) + 1; });
+    const topCat = Object.entries(catMap).sort((a,b)=>b[1]-a[1])[0]?.[0] || '—';
+
+    const header = document.createElement('div');
+    header.className = 'results-header';
+    header.innerHTML = `
+      <span class="results-title">Triage Results</span>
+      <span class="results-count">${emails.length} email${emails.length !== 1 ? 's' : ''}</span>
+    `;
+    col.appendChild(header);
+
+    const summary = document.createElement('div');
+    summary.className = 'summary-row';
+    summary.innerHTML = `
+      <div class="summary-chip">
+        <span class="chip-val">${emails.length}</span>
+        <span class="chip-label">Total</span>
+      </div>
+      <div class="summary-chip">
+        <span class="chip-dot" style="background:${PRI_DOT.Urgent}"></span>
+        <span class="chip-val">${urgentCount}</span>
+        <span class="chip-label">Urgent</span>
+      </div>
+      <div class="summary-chip">
+        <span class="chip-val" style="font-size:13px;">${topCat}</span>
+        <span class="chip-label">Top category</span>
+      </div>
+    `;
+    col.appendChild(summary);
+
+    const list = document.createElement('div');
+    list.className = 'cards-list';
+
+    emails.forEach((e, i) => {
+      const catClass = CAT_CLASS[e.category] || 'cat-Other';
+      const priClass = PRI_CLASS[e.priority] || 'pri-Normal';
+      const delay    = i * 60;
+
+      const card = document.createElement('div');
+      card.className = 'email-card';
+      card.style.animationDelay = `${delay}ms`;
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-badges">
+            <span class="badge ${catClass}">${e.category}</span>
+            <span class="badge ${priClass}">${e.priority}</span>
+          </div>
+          <span class="card-num">#${e.index}</span>
+        </div>
+        <div class="card-first-line">${escHtml(e.first_line)}</div>
+        <div class="card-divider"></div>
+        <div class="response-row">
+          <span class="response-label">Reply</span>
+          <span class="response-text">"${escHtml(e.response_starter)}"</span>
+          <button class="copy-btn" onclick="copyStarter(this, ${JSON.stringify(e.response_starter)})">Copy</button>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+
+    col.appendChild(list);
+  }
+
+  // ── Copy starter to clipboard ──────────────────────────
+  function copyStarter(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  // ── Error display ──────────────────────────────────────
+  function showError(msg) {
+    const col = document.getElementById('results-col');
+    col.innerHTML = `
+      <div class="error-box">
+        <span class="error-icon">⚠️</span>
+        <div class="error-msg"><strong>Error</strong> — ${escHtml(msg)}</div>
+      </div>
+    `;
+  }
+
+  function clearResults() {
+    document.getElementById('results-col').innerHTML = '';
+  }
+
+  // ── Loading state ──────────────────────────────────────
+  function setLoading(on) {
+    const btn = document.getElementById('triage-btn');
+    if (on) {
+      btn.disabled = true;
+      btn.innerHTML = `<div class="spinner"></div> Analysing with Claude…`;
+    } else {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Triage Emails`;
+    }
+  }
+
+  // ── Util ───────────────────────────────────────────────
+  function escHtml(str = '') {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── Keyboard shortcut: Cmd/Ctrl+Enter ─────────────────
+  document.getElementById('email-input').addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') runTriage();
+  });
+</script>
+</body>
+</html>

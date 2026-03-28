@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verde Cuts – Invoice Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #2d6a4f;
+      --green-light: #40916c;
+      --green-pale: #d8f3dc;
+      --accent: #52b788;
+      --text: #1b1b1b;
+      --muted: #6b7280;
+      --border: #d1d5db;
+      --bg: #f9fafb;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── APP SHELL ── */
+    .app-header {
+      background: var(--green);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .app-header svg { flex-shrink: 0; }
+    .app-header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; }
+    .app-header span { font-size: 0.85rem; opacity: 0.75; }
+
+    .app-body {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    /* ── FORM PANEL ── */
+    .form-panel {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+    .form-panel h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--green);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--green-pale);
+    }
+    .form-group { margin-bottom: 0.9rem; }
+    label { display: block; font-size: 0.8rem; font-weight: 600; color: var(--muted); margin-bottom: 0.3rem; }
+    input, textarea {
+      width: 100%;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: border-color 0.15s;
+      background: white;
+    }
+    input:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(82,183,136,0.15); }
+    textarea { resize: vertical; min-height: 68px; }
+
+    /* ── SERVICES TABLE ── */
+    .services-header {
+      display: grid;
+      grid-template-columns: 1fr 110px 32px;
+      gap: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.4rem;
+    }
+    .service-row {
+      display: grid;
+      grid-template-columns: 1fr 110px 32px;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+      align-items: center;
+    }
+    .service-row input { margin: 0; }
+    .btn-remove {
+      width: 32px; height: 32px;
+      border: none; border-radius: 6px;
+      background: #fee2e2; color: #dc2626;
+      font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-remove:hover { background: #fca5a5; }
+
+    .btn-add {
+      width: 100%; margin-top: 0.6rem;
+      padding: 0.5rem;
+      border: 2px dashed var(--border);
+      border-radius: 7px;
+      background: transparent;
+      color: var(--green-light);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-add:hover { border-color: var(--accent); background: var(--green-pale); }
+
+    /* ── TOTALS ── */
+    .totals {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--green-pale);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    .totals-row { display: flex; justify-content: space-between; margin-bottom: 0.3rem; color: var(--muted); }
+    .totals-row.total { font-size: 1.05rem; font-weight: 700; color: var(--green); margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #b7e4c7; }
+
+    /* ── ACTION BUTTONS ── */
+    .actions { margin-top: 1.2rem; display: flex; gap: 0.75rem; }
+    .btn-primary {
+      flex: 1; padding: 0.65rem 1rem;
+      background: var(--green);
+      color: white; border: none; border-radius: 8px;
+      font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: background 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    }
+    .btn-primary:hover { background: var(--green-light); }
+    .btn-secondary {
+      flex: 1; padding: 0.65rem 1rem;
+      background: white; color: var(--green);
+      border: 2px solid var(--green); border-radius: 8px;
+      font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    }
+    .btn-secondary:hover { background: var(--green-pale); }
+
+    /* ── INVOICE PREVIEW ── */
+    .preview-panel {
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+    }
+    .preview-panel h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--green);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--green-pale);
+    }
+
+    /* ── INVOICE DOCUMENT ── */
+    #invoice {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #1b1b1b;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .inv-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 3px solid var(--green);
+    }
+    .inv-logo { display: flex; align-items: center; gap: 0.5rem; }
+    .inv-logo-icon {
+      width: 42px; height: 42px;
+      background: var(--green);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .inv-biz-name { font-size: 1.3rem; font-weight: 800; color: var(--green); line-height: 1.1; }
+    .inv-biz-sub { font-size: 0.75rem; color: var(--muted); }
+    .inv-meta { text-align: right; }
+    .inv-label { font-size: 1.4rem; font-weight: 800; color: var(--green); letter-spacing: -0.02em; }
+    .inv-number { font-size: 0.8rem; color: var(--muted); }
+    .inv-date { font-size: 0.8rem; color: var(--muted); }
+
+    .inv-parties {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .inv-party-box { }
+    .inv-party-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 0.25rem; }
+    .inv-party-name { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .inv-party-detail { font-size: 0.82rem; color: var(--muted); white-space: pre-wrap; }
+
+    .inv-table { width: 100%; border-collapse: collapse; margin-bottom: 1.2rem; }
+    .inv-table thead tr { background: var(--green); color: white; }
+    .inv-table th { padding: 0.5rem 0.7rem; text-align: left; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .inv-table th:last-child { text-align: right; }
+    .inv-table tbody tr { border-bottom: 1px solid var(--border); }
+    .inv-table tbody tr:last-child { border-bottom: none; }
+    .inv-table td { padding: 0.5rem 0.7rem; font-size: 0.85rem; }
+    .inv-table td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+    .inv-table tbody tr:nth-child(even) { background: #f8fbf9; }
+
+    .inv-totals { margin-left: auto; width: 200px; }
+    .inv-totals-row { display: flex; justify-content: space-between; padding: 0.2rem 0; font-size: 0.85rem; color: var(--muted); }
+    .inv-totals-row.inv-total { border-top: 2px solid var(--green); margin-top: 0.4rem; padding-top: 0.4rem; font-weight: 700; font-size: 0.95rem; color: var(--green); }
+    .inv-totals-row span:last-child { font-variant-numeric: tabular-nums; }
+
+    .inv-footer {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .inv-thankyou { font-weight: 700; color: var(--green); font-size: 0.9rem; }
+    .inv-contact { font-size: 0.75rem; color: var(--muted); text-align: right; }
+
+    /* ── PRINT STYLES ── */
+    @media print {
+      body { background: white; }
+      .app-header, .form-panel, .preview-panel h2, .actions-bar { display: none !important; }
+      .app-body { display: block; max-width: 100%; padding: 0; }
+      .preview-panel { border: none; border-radius: 0; padding: 1.5cm; box-shadow: none; }
+      #invoice { font-size: 11pt; }
+      .inv-biz-name { font-size: 16pt; }
+      .inv-label { font-size: 18pt; }
+    }
+
+    @media (max-width: 700px) {
+      .app-body { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+    <circle cx="12" cy="10" r="3"/>
+  </svg>
+  <div>
+    <h1>Verde Cuts</h1>
+    <span>Invoice Generator</span>
+  </div>
+</header>
+
+<div class="app-body">
+
+  <!-- FORM -->
+  <div class="form-panel">
+    <h2>Invoice Details</h2>
+
+    <div class="form-group">
+      <label>Client Name</label>
+      <input type="text" id="clientName" placeholder="Jane Smith" oninput="render()">
+    </div>
+    <div class="form-group">
+      <label>Client Address</label>
+      <textarea id="clientAddress" placeholder="123 Oak Lane&#10;Springfield, IL 62701" oninput="render()"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Job Date</label>
+      <input type="date" id="jobDate" oninput="render()">
+    </div>
+    <div class="form-group">
+      <label>Invoice Number</label>
+      <input type="text" id="invoiceNum" oninput="render()">
+    </div>
+
+    <h2 style="margin-top:1.2rem;">Services</h2>
+    <div class="services-header">
+      <span>Description</span>
+      <span>Price ($)</span>
+      <span></span>
+    </div>
+    <div id="serviceRows"></div>
+    <button class="btn-add" onclick="addRow()">+ Add Service</button>
+
+    <div class="totals">
+      <div class="totals-row"><span>Subtotal</span><span id="sumSubtotal">$0.00</span></div>
+      <div class="totals-row"><span>Tax (8.1%)</span><span id="sumTax">$0.00</span></div>
+      <div class="totals-row total"><span>Total</span><span id="sumTotal">$0.00</span></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="window.print()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print Invoice
+      </button>
+      <button class="btn-secondary" onclick="downloadHTML()">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download
+      </button>
+    </div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview-panel">
+    <h2>Live Preview</h2>
+    <div id="invoice"></div>
+  </div>
+
+</div>
+
+<script>
+  const TAX_RATE = 0.081;
+  let services = [{ desc: '', price: '' }];
+
+  function fmt(n) {
+    return '$' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function addRow() {
+    services.push({ desc: '', price: '' });
+    renderRows();
+    render();
+  }
+
+  function removeRow(i) {
+    if (services.length === 1) return;
+    services.splice(i, 1);
+    renderRows();
+    render();
+  }
+
+  function renderRows() {
+    const container = document.getElementById('serviceRows');
+    container.innerHTML = '';
+    services.forEach((s, i) => {
+      const row = document.createElement('div');
+      row.className = 'service-row';
+      row.innerHTML = `
+        <input type="text" placeholder="e.g. Lawn mowing" value="${escHtml(s.desc)}"
+          oninput="services[${i}].desc=this.value;render()">
+        <input type="number" placeholder="0.00" min="0" step="0.01" value="${s.price}"
+          oninput="services[${i}].price=this.value;render()">
+        <button class="btn-remove" onclick="removeRow(${i})" title="Remove">&#x2715;</button>
+      `;
+      container.appendChild(row);
+    });
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function calcTotals() {
+    const subtotal = services.reduce((a, s) => a + (parseFloat(s.price) || 0), 0);
+    const tax = subtotal * TAX_RATE;
+    const total = subtotal + tax;
+    return { subtotal, tax, total };
+  }
+
+  function render() {
+    const clientName = document.getElementById('clientName').value.trim();
+    const clientAddress = document.getElementById('clientAddress').value.trim();
+    const jobDate = document.getElementById('jobDate').value;
+    const invoiceNum = document.getElementById('invoiceNum').value.trim();
+
+    const { subtotal, tax, total } = calcTotals();
+
+    // Update sidebar totals
+    document.getElementById('sumSubtotal').textContent = fmt(subtotal);
+    document.getElementById('sumTax').textContent = fmt(tax);
+    document.getElementById('sumTotal').textContent = fmt(total);
+
+    // Format date nicely
+    let displayDate = '—';
+    if (jobDate) {
+      const [y, m, d] = jobDate.split('-');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      displayDate = `${months[parseInt(m)-1]} ${parseInt(d)}, ${y}`;
+    }
+
+    // Invoice number
+    const invNo = invoiceNum || autoInvNum();
+
+    // Service rows HTML
+    const rowsHtml = services.map((s, i) => {
+      if (!s.desc && !s.price) return '';
+      const price = parseFloat(s.price) || 0;
+      return `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${escHtml(s.desc) || '<span style="color:#9ca3af;font-style:italic">Unnamed service</span>'}</td>
+          <td>${fmt(price)}</td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('invoice').innerHTML = `
+      <div class="inv-head">
+        <div class="inv-logo">
+          <div class="inv-logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+          </div>
+          <div>
+            <div class="inv-biz-name">Verde Cuts</div>
+            <div class="inv-biz-sub">Professional Landscaping Services</div>
+          </div>
+        </div>
+        <div class="inv-meta">
+          <div class="inv-label">INVOICE</div>
+          <div class="inv-number">#${escHtml(invNo)}</div>
+          <div class="inv-date">Job Date: ${escHtml(displayDate)}</div>
+        </div>
+      </div>
+
+      <div class="inv-parties">
+        <div class="inv-party-box">
+          <div class="inv-party-label">Bill To</div>
+          <div class="inv-party-name">${clientName ? escHtml(clientName) : '<span style="color:#d1d5db">Client Name</span>'}</div>
+          <div class="inv-party-detail">${clientAddress ? escHtml(clientAddress) : ''}</div>
+        </div>
+        <div class="inv-party-box" style="text-align:right;">
+          <div class="inv-party-label">From</div>
+          <div class="inv-party-name">Verde Cuts LLC</div>
+          <div class="inv-party-detail">verdecutsco@email.com\n(555) 000-0000</div>
+        </div>
+      </div>
+
+      <table class="inv-table">
+        <thead>
+          <tr>
+            <th style="width:36px">#</th>
+            <th>Service Description</th>
+            <th style="width:100px;text-align:right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml || '<tr><td colspan="3" style="color:#9ca3af;font-style:italic;text-align:center;padding:1rem">Add services on the left</td></tr>'}
+        </tbody>
+      </table>
+
+      <div class="inv-totals">
+        <div class="inv-totals-row"><span>Subtotal</span><span>${fmt(subtotal)}</span></div>
+        <div class="inv-totals-row"><span>Tax (8.1%)</span><span>${fmt(tax)}</span></div>
+        <div class="inv-totals-row inv-total"><span>Total Due</span><span>${fmt(total)}</span></div>
+      </div>
+
+      <div class="inv-footer">
+        <div class="inv-thankyou">Thank you for your business!</div>
+        <div class="inv-contact">Payment due upon receipt<br>verdecutsco@email.com</div>
+      </div>
+    `;
+  }
+
+  function autoInvNum() {
+    const now = new Date();
+    return `VC-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}-001`;
+  }
+
+  function downloadHTML() {
+    const invEl = document.getElementById('invoice').innerHTML;
+    const styles = document.querySelector('style').innerHTML;
+    const blob = new Blob([`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Verde Cuts Invoice</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:'Segoe UI',system-ui,sans-serif; padding:2cm; max-width:800px; margin:0 auto; color:#1b1b1b; }
+  ${styles}
+</style></head><body><div id="invoice">${invEl}</div></body></html>`], { type: 'text/html' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    const inv = document.getElementById('invoiceNum').value.trim() || autoInvNum();
+    a.download = `VerdeCuts-Invoice-${inv}.html`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // Init
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('jobDate').value = today;
+  document.getElementById('invoiceNum').value = autoInvNum();
+  renderRows();
+  render();
+</script>
+</body>
+</html>

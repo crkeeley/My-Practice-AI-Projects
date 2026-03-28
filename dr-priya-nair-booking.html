@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dr. Priya Nair — Book an Appointment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sage-deep:    #5a7a5c;
+      --sage-mid:     #7a9e7e;
+      --sage-light:   #a8c5a0;
+      --sage-pale:    #d4e8d0;
+      --sage-ghost:   #eef5ec;
+      --cream:        #faf8f4;
+      --warm-100:     #f5f0e8;
+      --warm-200:     #e8e1d4;
+      --warm-300:     #c9bfaf;
+      --terracotta:   #b07d5e;
+      --terracotta-l: #c9956e;
+      --text-dark:    #2e3d2e;
+      --text-mid:     #4a5e4a;
+      --text-light:   #7a8f7a;
+      --white:        #ffffff;
+      --shadow-soft:  0 2px 20px rgba(90,122,92,0.10);
+      --shadow-card:  0 4px 32px rgba(90,122,92,0.12);
+      --radius:       14px;
+      --radius-sm:    8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--cream);
+      color: var(--text-dark);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    .header {
+      background: linear-gradient(135deg, var(--sage-ghost) 0%, var(--warm-100) 100%);
+      border-bottom: 1px solid var(--warm-200);
+      padding: 40px 24px 36px;
+    }
+    .header-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--sage-mid), var(--sage-deep));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--white);
+      letter-spacing: 1px;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-soft);
+    }
+    .header-text h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--text-dark);
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+    }
+    .header-text h1 span {
+      color: var(--sage-deep);
+      font-weight: 600;
+    }
+    .header-text p {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+    .tag-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--sage-pale);
+      color: var(--sage-deep);
+    }
+
+    /* ── MAIN LAYOUT ─────────────────────────────────── */
+    .main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    .section-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: 6px;
+    }
+    .section-sublabel {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      margin-bottom: 20px;
+    }
+
+    /* ── DATE GRID ───────────────────────────────────── */
+    .date-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+    .date-card {
+      background: var(--white);
+      border: 1.5px solid var(--warm-200);
+      border-radius: var(--radius);
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: var(--shadow-soft);
+    }
+    .date-card:hover {
+      border-color: var(--sage-light);
+      background: var(--sage-ghost);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-card);
+    }
+    .date-card.active {
+      border-color: var(--sage-deep);
+      background: linear-gradient(135deg, var(--sage-ghost), var(--sage-pale));
+      box-shadow: 0 4px 20px rgba(90,122,92,0.18);
+    }
+    .date-card .day-name {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    .date-card.active .day-name { color: var(--sage-deep); }
+    .date-card .day-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.9rem;
+      font-weight: 500;
+      color: var(--text-dark);
+      line-height: 1.1;
+      margin: 2px 0;
+    }
+    .date-card.active .day-num { color: var(--sage-deep); }
+    .date-card .month-name {
+      font-size: 0.7rem;
+      color: var(--text-light);
+    }
+    .date-card.active .month-name { color: var(--sage-mid); }
+
+    /* ── SLOT PANEL ──────────────────────────────────── */
+    .slot-section {
+      background: var(--white);
+      border: 1px solid var(--warm-200);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-soft);
+      display: none;
+    }
+    .slot-section.visible { display: block; }
+    .slot-section-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      color: var(--text-dark);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .slot-section-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 18px;
+      background: var(--sage-mid);
+      border-radius: 2px;
+    }
+    .time-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 8px;
+    }
+    .time-slot {
+      padding: 10px 6px;
+      text-align: center;
+      border: 1.5px solid var(--warm-200);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.83rem;
+      font-weight: 500;
+      color: var(--text-mid);
+      background: var(--cream);
+      transition: all 0.18s ease;
+      position: relative;
+    }
+    .time-slot:hover {
+      border-color: var(--sage-mid);
+      background: var(--sage-ghost);
+      color: var(--sage-deep);
+    }
+    .time-slot.selected {
+      border-color: var(--sage-deep);
+      background: linear-gradient(135deg, var(--sage-ghost), var(--sage-pale));
+      color: var(--sage-deep);
+    }
+    .time-slot .duration {
+      display: block;
+      font-size: 0.67rem;
+      font-weight: 400;
+      color: var(--text-light);
+      margin-top: 2px;
+    }
+
+    /* ── BOOKING FORM ────────────────────────────────── */
+    .form-section {
+      background: var(--white);
+      border: 1px solid var(--warm-200);
+      border-radius: var(--radius);
+      padding: 32px;
+      box-shadow: var(--shadow-soft);
+      display: none;
+    }
+    .form-section.visible { display: block; }
+
+    .form-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      gap: 12px;
+    }
+    .form-header-text h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+    .form-header-text .appt-summary {
+      font-size: 0.82rem;
+      color: var(--sage-deep);
+      margin-top: 4px;
+      background: var(--sage-pale);
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .btn-change {
+      font-size: 0.78rem;
+      color: var(--text-light);
+      background: none;
+      border: 1px solid var(--warm-200);
+      border-radius: 20px;
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-change:hover { border-color: var(--sage-light); color: var(--sage-deep); }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .form-field.full { grid-column: 1 / -1; }
+    label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-light);
+    }
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      background: var(--cream);
+      border: 1.5px solid var(--warm-200);
+      border-radius: var(--radius-sm);
+      padding: 11px 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+      width: 100%;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--sage-mid);
+      box-shadow: 0 0 0 3px rgba(122, 158, 126, 0.15);
+      background: var(--white);
+    }
+    select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237a8f7a' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+    textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+    ::placeholder { color: var(--warm-300); }
+
+    .submit-row {
+      margin-top: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .btn-submit {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--white);
+      background: linear-gradient(135deg, var(--sage-mid), var(--sage-deep));
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 13px 32px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(90,122,92,0.25);
+      letter-spacing: 0.02em;
+    }
+    .btn-submit:hover {
+      background: linear-gradient(135deg, var(--sage-deep), #3f5f41);
+      box-shadow: 0 6px 20px rgba(90,122,92,0.35);
+      transform: translateY(-1px);
+    }
+    .btn-submit:active { transform: translateY(0); }
+    .privacy-note {
+      font-size: 0.75rem;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+
+    /* ── CONFIRMATION ────────────────────────────────── */
+    #confirmation {
+      display: none;
+      max-width: 560px;
+      margin: 60px auto 80px;
+      padding: 0 24px;
+      text-align: center;
+    }
+    #confirmation.visible { display: block; }
+    .confirm-icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, var(--sage-pale), var(--sage-ghost));
+      border-radius: 50%;
+      margin: 0 auto 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 20px rgba(90,122,92,0.15);
+    }
+    .confirm-icon svg { width: 32px; height: 32px; }
+    #confirmation h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2rem;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+    #confirmation .subtitle {
+      font-size: 0.88rem;
+      color: var(--text-light);
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+    .confirm-card {
+      background: var(--white);
+      border: 1px solid var(--warm-200);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      text-align: left;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 24px;
+    }
+    .confirm-card h3 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--warm-200);
+    }
+    .confirm-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--warm-100);
+    }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-row .key {
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-light);
+      flex-shrink: 0;
+      padding-top: 1px;
+    }
+    .confirm-row .val {
+      font-size: 0.88rem;
+      color: var(--text-dark);
+      text-align: right;
+    }
+    .confirm-card .notes-val {
+      font-size: 0.85rem;
+      color: var(--text-mid);
+      font-style: italic;
+      text-align: right;
+      line-height: 1.5;
+    }
+    .confirm-id {
+      font-size: 0.78rem;
+      color: var(--text-light);
+      margin-top: 4px;
+    }
+    .btn-new {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--sage-deep);
+      background: var(--sage-ghost);
+      border: 1.5px solid var(--sage-pale);
+      border-radius: var(--radius-sm);
+      padding: 12px 28px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-new:hover {
+      background: var(--sage-pale);
+      border-color: var(--sage-light);
+    }
+
+    /* ── DIVIDER ─────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--warm-200), transparent);
+      margin: 32px 0;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      padding: 28px 24px;
+      border-top: 1px solid var(--warm-200);
+      font-size: 0.75rem;
+      color: var(--text-light);
+      line-height: 1.7;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────── */
+    @media (max-width: 600px) {
+      .header-inner { flex-direction: column; align-items: flex-start; gap: 16px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-field.full { grid-column: 1; }
+      .submit-row { flex-direction: column; align-items: flex-start; }
+      .date-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    /* ── SUBTLE SCROLL ANIMATION ─────────────────────── */
+    .fade-in {
+      animation: fadeIn 0.35s ease forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────── -->
+<header class="header">
+  <div class="header-inner">
+    <div class="avatar">PN</div>
+    <div class="header-text">
+      <h1>Dr. <span>Priya Nair</span></h1>
+      <p>Licensed Clinical Psychologist &nbsp;·&nbsp; CBT &amp; Mindfulness-Based Therapy</p>
+      <div class="tag-row">
+        <span class="tag">Anxiety &amp; Stress</span>
+        <span class="tag">Life Transitions</span>
+        <span class="tag">Relationship Therapy</span>
+        <span class="tag">Mon · Wed · Fri</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── BOOKING VIEW ─────────────────────────────────── -->
+<div id="booking-view">
+  <div class="main">
+
+    <!-- Date picker -->
+    <p class="section-label">Choose a date</p>
+    <p class="section-sublabel">Available appointments over the next two weeks</p>
+    <div class="date-grid" id="date-grid"></div>
+
+    <div class="divider"></div>
+
+    <!-- Time slots -->
+    <div class="slot-section" id="slot-section">
+      <div class="slot-section-title" id="slot-title">Available times</div>
+      <div class="time-grid" id="time-grid"></div>
+    </div>
+
+    <!-- Booking form -->
+    <div class="form-section" id="form-section">
+      <div class="form-header">
+        <div class="form-header-text">
+          <h2>Your details</h2>
+          <span class="appt-summary" id="form-appt-summary"></span>
+        </div>
+        <button class="btn-change" onclick="changeSlot()">Change slot</button>
+      </div>
+
+      <form id="booking-form" onsubmit="submitBooking(event)" novalidate>
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="f-name">Full name</label>
+            <input type="text" id="f-name" placeholder="Your name" required>
+          </div>
+          <div class="form-field">
+            <label for="f-email">Email address</label>
+            <input type="email" id="f-email" placeholder="you@example.com" required>
+          </div>
+          <div class="form-field full">
+            <label for="f-type">Session type</label>
+            <select id="f-type" required>
+              <option value="" disabled selected>Select a session type…</option>
+              <option value="Initial Consultation">Initial Consultation (50 min)</option>
+              <option value="Ongoing Session">Ongoing Session (50 min)</option>
+            </select>
+          </div>
+          <div class="form-field full">
+            <label for="f-notes">Brief notes <span style="font-weight:300;text-transform:none;letter-spacing:0;">(optional)</span></label>
+            <textarea id="f-notes" placeholder="Anything you'd like Dr. Nair to know before your appointment…"></textarea>
+          </div>
+        </div>
+        <div class="submit-row">
+          <button type="submit" class="btn-submit">Confirm appointment</button>
+          <p class="privacy-note">Your information is kept strictly confidential<br>and used only to manage your appointment.</p>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── CONFIRMATION VIEW ────────────────────────────── -->
+<div id="confirmation">
+  <div class="confirm-icon">
+    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="14" stroke="#7a9e7e" stroke-width="1.5"/>
+      <path d="M10 16.5l4.5 4.5 7.5-9" stroke="#5a7a5c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <h2>You're all set</h2>
+  <p class="subtitle">Your appointment with Dr. Priya Nair has been confirmed.<br>A reminder will be sent to your email before the session.</p>
+
+  <div class="confirm-card">
+    <h3>Appointment details</h3>
+    <div class="confirm-row"><span class="key">Date &amp; time</span><span class="val" id="c-datetime"></span></div>
+    <div class="confirm-row"><span class="key">Duration</span><span class="val">50 minutes</span></div>
+    <div class="confirm-row"><span class="key">Session type</span><span class="val" id="c-type"></span></div>
+    <div class="confirm-row"><span class="key">Client name</span><span class="val" id="c-name"></span></div>
+    <div class="confirm-row"><span class="key">Email</span><span class="val" id="c-email"></span></div>
+    <div id="c-notes-row" class="confirm-row" style="display:none"><span class="key">Notes</span><span class="val notes-val" id="c-notes"></span></div>
+    <div class="confirm-row"><span class="key">Confirmation</span><span class="val confirm-id" id="c-ref"></span></div>
+  </div>
+
+  <button class="btn-new" onclick="resetBooking()">Book another appointment</button>
+</div>
+
+<footer class="footer">
+  Dr. Priya Nair &nbsp;·&nbsp; Licensed Clinical Psychologist<br>
+  For urgent support, please contact your local crisis line or emergency services.
+</footer>
+
+<script>
+  // ── State ──────────────────────────────────────────────
+  let selectedDate = null;
+  let selectedSlot = null;
+
+  // ── Generate dates (Mon=1, Wed=3, Fri=5) ──────────────
+  function getAvailableDates() {
+    const dates = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const cutoff = new Date(today);
+    cutoff.setDate(today.getDate() + 14);
+
+    const cursor = new Date(today);
+    // start from tomorrow
+    cursor.setDate(cursor.getDate() + 1);
+
+    while (cursor <= cutoff) {
+      const dow = cursor.getDay();
+      if (dow === 1 || dow === 3 || dow === 5) {
+        dates.push(new Date(cursor));
+      }
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return dates;
+  }
+
+  // ── Generate 50-min slots 9am–5pm ─────────────────────
+  function getSlots() {
+    const slots = [];
+    let h = 9, m = 0;
+    while (true) {
+      const startH = h, startM = m;
+      let endM = m + 50;
+      let endH = h + Math.floor(endM / 60);
+      endM = endM % 60;
+      if (endH > 17 || (endH === 17 && endM > 0)) break;
+      slots.push({ startH, startM, endH, endM });
+      // advance
+      m += 50;
+      h += Math.floor(m / 60);
+      m = m % 60;
+    }
+    return slots;
+  }
+
+  function fmt12(h, m) {
+    const suffix = h < 12 ? 'am' : 'pm';
+    const hh = h % 12 || 12;
+    return `${hh}:${String(m).padStart(2, '0')} ${suffix}`;
+  }
+
+  function fmtDate(d) {
+    return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  }
+
+  // ── Render date grid ───────────────────────────────────
+  function renderDates() {
+    const grid = document.getElementById('date-grid');
+    const dates = getAvailableDates();
+    grid.innerHTML = '';
+    dates.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'date-card';
+      card.setAttribute('data-date', d.toISOString());
+      const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      card.innerHTML = `
+        <div class="day-name">${dayNames[d.getDay()]}</div>
+        <div class="day-num">${d.getDate()}</div>
+        <div class="month-name">${monthNames[d.getMonth()]}</div>
+      `;
+      card.addEventListener('click', () => selectDate(d, card));
+      grid.appendChild(card);
+    });
+  }
+
+  // ── Select a date ──────────────────────────────────────
+  function selectDate(d, cardEl) {
+    selectedDate = d;
+    selectedSlot = null;
+
+    document.querySelectorAll('.date-card').forEach(c => c.classList.remove('active'));
+    cardEl.classList.add('active');
+
+    // reset form
+    document.getElementById('form-section').classList.remove('visible');
+
+    // render slots
+    const slotSection = document.getElementById('slot-section');
+    const title = document.getElementById('slot-title');
+    const grid = document.getElementById('time-grid');
+
+    title.textContent = fmtDate(d);
+    grid.innerHTML = '';
+
+    getSlots().forEach(s => {
+      const btn = document.createElement('div');
+      btn.className = 'time-slot';
+      btn.innerHTML = `${fmt12(s.startH, s.startM)}<span class="duration">50 min</span>`;
+      btn.addEventListener('click', () => selectSlot(s, btn));
+      grid.appendChild(btn);
+    });
+
+    slotSection.classList.add('visible', 'fade-in');
+    slotSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ── Select a time slot ─────────────────────────────────
+  function selectSlot(slot, btnEl) {
+    selectedSlot = slot;
+
+    document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('selected'));
+    btnEl.classList.add('selected');
+
+    const summary = `${fmtDate(selectedDate)} · ${fmt12(slot.startH, slot.startM)} – ${fmt12(slot.endH, slot.endM)}`;
+    document.getElementById('form-appt-summary').textContent = summary;
+
+    const formSection = document.getElementById('form-section');
+    formSection.classList.add('visible', 'fade-in');
+    formSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ── Change slot ────────────────────────────────────────
+  function changeSlot() {
+    selectedSlot = null;
+    document.getElementById('form-section').classList.remove('visible');
+    document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('selected'));
+    document.getElementById('slot-section').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // ── Submit booking ─────────────────────────────────────
+  function submitBooking(e) {
+    e.preventDefault();
+
+    const name  = document.getElementById('f-name').value.trim();
+    const email = document.getElementById('f-email').value.trim();
+    const type  = document.getElementById('f-type').value;
+    const notes = document.getElementById('f-notes').value.trim();
+
+    // Basic validation
+    if (!name)  { highlight('f-name');  return; }
+    if (!email || !email.includes('@')) { highlight('f-email'); return; }
+    if (!type)  { highlight('f-type');  return; }
+
+    // Populate confirmation
+    const dateStr = fmtDate(selectedDate);
+    const timeStr = `${fmt12(selectedSlot.startH, selectedSlot.startM)} – ${fmt12(selectedSlot.endH, selectedSlot.endM)}`;
+
+    document.getElementById('c-datetime').textContent = `${dateStr}, ${timeStr}`;
+    document.getElementById('c-type').textContent = type;
+    document.getElementById('c-name').textContent = name;
+    document.getElementById('c-email').textContent = email;
+
+    if (notes) {
+      document.getElementById('c-notes').textContent = notes;
+      document.getElementById('c-notes-row').style.display = 'flex';
+    } else {
+      document.getElementById('c-notes-row').style.display = 'none';
+    }
+
+    document.getElementById('c-ref').textContent = 'PN-' + Math.random().toString(36).slice(2,8).toUpperCase();
+
+    // Transition
+    document.getElementById('booking-view').style.display = 'none';
+    const conf = document.getElementById('confirmation');
+    conf.classList.add('visible', 'fade-in');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function highlight(id) {
+    const el = document.getElementById(id);
+    el.style.borderColor = '#c0675a';
+    el.focus();
+    setTimeout(() => el.style.borderColor = '', 2000);
+  }
+
+  // ── Reset ──────────────────────────────────────────────
+  function resetBooking() {
+    selectedDate = null;
+    selectedSlot = null;
+
+    document.getElementById('confirmation').classList.remove('visible');
+    document.getElementById('booking-view').style.display = '';
+    document.getElementById('slot-section').classList.remove('visible');
+    document.getElementById('form-section').classList.remove('visible');
+    document.getElementById('booking-form').reset();
+    document.querySelectorAll('.date-card').forEach(c => c.classList.remove('active'));
+    document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('selected'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Init ───────────────────────────────────────────────
+  renderDates();
+</script>
+</body>
+</html>

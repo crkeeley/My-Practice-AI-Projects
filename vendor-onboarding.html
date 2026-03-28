@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Onboarding — Harvest Table Marketplace</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:        #faf7f2;
+      --cream-2:      #f4efe6;
+      --cream-3:      #ede5d8;
+      --surface:      #ffffff;
+      --border:       #e0d8cc;
+      --border-mid:   #cdc3b4;
+      --green-deep:   #2d5a3d;
+      --green-mid:    #3d7a52;
+      --green-light:  #6aaa80;
+      --green-pale:   #d4ead9;
+      --green-ghost:  #edf5ee;
+      --amber:        #b8762a;
+      --amber-mid:    #d4943a;
+      --amber-light:  #fdf0de;
+      --amber-pale:   #fef8ef;
+      --rust:         #c0542a;
+      --rust-light:   #fdeee8;
+      --blue-light:   #dbeafe;
+      --blue-mid:     #2563eb;
+      --text:         #1e2d1e;
+      --text-mid:     #3a4d3a;
+      --text-muted:   #6b7c6b;
+      --text-subtle:  #9aab9a;
+      --shadow-sm:    0 1px 3px rgba(30,45,30,.07);
+      --shadow:       0 2px 8px rgba(30,45,30,.09), 0 1px 3px rgba(30,45,30,.06);
+      --shadow-md:    0 6px 24px rgba(30,45,30,.11);
+      --radius:       14px;
+      --radius-sm:    8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    /* ── HEADER ─────────────────────────────────────── */
+    .header {
+      background: var(--green-deep);
+      padding: 0 32px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .brand-leaf {
+      font-size: 22px;
+      line-height: 1;
+    }
+    .brand-text {
+      font-family: 'Lora', serif;
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.01em;
+    }
+    .brand-text span { color: var(--green-light); }
+    .header-right {
+      font-size: 12px;
+      color: rgba(255,255,255,.55);
+      font-style: italic;
+    }
+
+    /* ── STEP BAR ───────────────────────────────────── */
+    .step-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+    }
+    .step-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      height: 52px;
+      gap: 0;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 20px 0 0;
+      flex-shrink: 0;
+    }
+    .step-num {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .step-num.active   { background: var(--green-mid); color: #fff; box-shadow: 0 2px 8px rgba(61,122,82,.3); }
+    .step-num.done     { background: var(--green-pale); color: var(--green-deep); }
+    .step-num.inactive { background: var(--cream-2); color: var(--text-subtle); }
+    .step-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: color 0.3s;
+    }
+    .step-label.active { color: var(--green-deep); font-weight: 600; }
+    .step-connector {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      margin: 0 16px;
+    }
+
+    /* ── PAGE WRAPPER ───────────────────────────────── */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* ── FORM PAGE ──────────────────────────────────── */
+    .form-page { padding: 36px 32px 80px; }
+    .form-wrap { max-width: 900px; margin: 0 auto; }
+
+    .form-intro {
+      margin-bottom: 32px;
+    }
+    .form-intro h1 {
+      font-family: 'Lora', serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      margin-bottom: 6px;
+    }
+    .form-intro p {
+      font-size: 14px;
+      color: var(--text-muted);
+      max-width: 520px;
+      line-height: 1.65;
+    }
+
+    /* Form layout */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    .form-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .form-section.wide { grid-column: 1 / -1; }
+
+    .fs-head {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(to right, var(--cream), var(--surface));
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .fs-icon { font-size: 16px; }
+    .fs-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+    }
+    .fs-body { padding: 20px; }
+
+    /* Field */
+    .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label.fl {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    label.fl .req { color: var(--rust); }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 13px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+      -webkit-appearance: none;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--green-mid);
+      box-shadow: 0 0 0 3px rgba(61,122,82,.13);
+      background: #fff;
+    }
+    input[type="number"] { max-width: 180px; }
+    textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+    ::placeholder { color: #c4c0b8; }
+
+    /* Inline number + unit */
+    .cap-row { display: flex; align-items: center; gap: 10px; }
+    .cap-row input { max-width: 120px; }
+    .cap-unit {
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Checkbox grid */
+    .check-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.15s;
+      background: var(--cream);
+      user-select: none;
+    }
+    .check-item:hover { border-color: var(--green-light); background: var(--green-ghost); }
+    .check-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      accent-color: var(--green-mid);
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      margin: 0;
+    }
+    .check-item.checked {
+      border-color: var(--green-mid);
+      background: var(--green-ghost);
+    }
+    .check-label { font-size: 13.5px; color: var(--text-mid); font-weight: 500; }
+    .check-emoji { font-size: 14px; }
+
+    /* API key section */
+    .api-row {
+      background: var(--cream-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .api-row label.fl { margin: 0; white-space: nowrap; }
+    .api-row .input-wrap { flex: 1; position: relative; }
+    .api-row input { background: var(--surface); margin: 0; }
+    .show-key {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-subtle);
+      display: flex;
+      padding: 2px;
+      transition: color 0.15s;
+    }
+    .show-key:hover { color: var(--text-muted); }
+
+    /* Submit */
+    .submit-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .btn-submit {
+      font-family: 'Inter', sans-serif;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 13px 32px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 3px 12px rgba(45,90,61,.28);
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      letter-spacing: 0.01em;
+    }
+    .btn-submit:hover:not(:disabled) {
+      background: linear-gradient(135deg, #337a4a, #1e3d28);
+      box-shadow: 0 5px 20px rgba(45,90,61,.38);
+      transform: translateY(-1px);
+    }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .submit-note {
+      font-size: 12.5px;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+    .spinner {
+      width: 15px; height: 15px;
+      border: 2.5px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── RESULTS PAGE ───────────────────────────────── */
+    .results-page { padding: 36px 32px 80px; }
+    .results-wrap { max-width: 1060px; margin: 0 auto; }
+
+    .results-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      gap: 16px;
+    }
+    .results-top h1 {
+      font-family: 'Lora', serif;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .results-top p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .btn-back {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 9px 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-back:hover { border-color: var(--green-light); color: var(--green-deep); }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .res-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      animation: riseIn 0.4s ease both;
+    }
+    .res-card.wide { grid-column: 1 / -1; }
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .rc-head {
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .rc-head-left { display: flex; align-items: center; gap: 10px; }
+    .rc-icon {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+    .rc-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .btn-copy {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 6px;
+      padding: 6px 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      border: 1.5px solid;
+      background: transparent;
+      flex-shrink: 0;
+    }
+    .btn-copy.green  { color: var(--green-mid);  border-color: var(--green-pale);  }
+    .btn-copy.green:hover { background: var(--green-ghost); border-color: var(--green-light); }
+    .btn-copy.amber  { color: var(--amber);       border-color: #f5ddb0;            }
+    .btn-copy.amber:hover { background: var(--amber-light); border-color: var(--amber-mid); }
+    .btn-copy.rust   { color: var(--rust);        border-color: #f0c4b4;            }
+    .btn-copy.rust:hover { background: var(--rust-light); }
+    .btn-copy.copied { color: #166534; border-color: #86efac; background: #f0fdf4; }
+
+    /* ── EMAIL CARD ─────────────────────────────────── */
+    .email-shell {
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+    }
+    .email-row {
+      display: flex;
+      gap: 8px;
+      font-size: 13px;
+      margin-bottom: 3px;
+    }
+    .email-row:last-child { margin-bottom: 0; }
+    .email-field { color: var(--text-subtle); font-weight: 600; min-width: 56px; }
+    .email-val   { color: var(--text-mid); }
+    .email-subject { color: var(--text); font-weight: 600; }
+
+    .email-body {
+      padding: 20px;
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text-mid);
+      white-space: pre-wrap;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ── PROFILE CARD ───────────────────────────────── */
+    .profile-inner { padding: 0; }
+
+    .profile-hero {
+      background: linear-gradient(135deg, var(--green-deep), #3d7a52);
+      padding: 24px 24px 20px;
+      color: #fff;
+    }
+    .profile-farm {
+      font-family: 'Lora', serif;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 3px;
+    }
+    .profile-owner {
+      font-size: 13.5px;
+      opacity: 0.8;
+    }
+    .profile-location {
+      font-size: 12.5px;
+      opacity: 0.65;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .profile-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--cream-2);
+    }
+    .pbadge {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .pbadge.product { background: var(--green-ghost); color: var(--green-deep); border: 1px solid var(--green-pale); }
+    .pbadge.cert    { background: var(--amber-light); color: var(--amber); border: 1px solid #f5ddb0; }
+    .pbadge.none    { background: var(--cream-3); color: var(--text-muted); border: 1px solid var(--border); }
+
+    .profile-details {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .profile-row {
+      display: flex;
+      gap: 10px;
+      font-size: 13.5px;
+    }
+    .pr-key {
+      min-width: 110px;
+      font-weight: 600;
+      color: var(--text-subtle);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding-top: 1px;
+    }
+    .pr-val { color: var(--text-mid); line-height: 1.5; }
+
+    .profile-tagline {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      font-family: 'Lora', serif;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      font-style: italic;
+      line-height: 1.6;
+      background: var(--cream);
+    }
+
+    /* ── CHECKLIST CARD ─────────────────────────────── */
+    .checklist-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+    .chk-section { }
+    .chk-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      padding-bottom: 7px;
+      border-bottom: 1.5px dashed var(--border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chk-list { display: flex; flex-direction: column; gap: 6px; }
+    .chk-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--cream);
+      border: 1px solid var(--border);
+    }
+    .chk-box {
+      width: 17px; height: 17px;
+      border: 2px solid var(--border-mid);
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 1px;
+      background: var(--surface);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chk-box:hover { border-color: var(--green-mid); }
+    .chk-box.done  { background: var(--green-mid); border-color: var(--green-mid); display: flex; align-items: center; justify-content: center; }
+    .chk-box.done::after { content: ''; width: 9px; height: 6px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translate(1px,-1px); display: block; }
+    .chk-text { font-size: 13.5px; color: var(--text-mid); line-height: 1.5; flex: 1; }
+    .chk-text.done-text { color: var(--text-subtle); text-decoration: line-through; }
+
+    .chk-progress {
+      background: var(--cream-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .chk-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+    .chk-bar { height: 100%; background: var(--green-mid); border-radius: 3px; transition: width 0.4s ease; width: 0%; }
+    .chk-pct { font-size: 12px; font-weight: 600; color: var(--green-mid); white-space: nowrap; }
+
+    /* ── ERROR ──────────────────────────────────────── */
+    .error-banner {
+      background: var(--rust-light);
+      border: 1px solid #f0c4b4;
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .error-banner .err-msg { font-size: 13px; color: #7f1d1d; line-height: 1.55; }
+
+    /* ── RESPONSIVE ─────────────────────────────────── */
+    @media (max-width: 760px) {
+      .form-grid    { grid-template-columns: 1fr; }
+      .results-grid { grid-template-columns: 1fr; }
+      .res-card.wide { grid-column: 1; }
+      .header       { padding: 0 16px; }
+      .form-page, .results-page { padding: 20px 16px 60px; }
+      .step-bar     { padding: 0 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────── -->
+<header class="header">
+  <div class="brand">
+    <span class="brand-leaf">🌿</span>
+    <span class="brand-text">Harvest <span>Table</span> Marketplace</span>
+  </div>
+  <span class="header-right">Vendor Onboarding Portal</span>
+</header>
+
+<!-- ── STEP BAR ────────────────────────────────────────── -->
+<div class="step-bar">
+  <div class="step-inner">
+    <div class="step">
+      <div class="step-num active" id="sn1">1</div>
+      <span class="step-label active" id="sl1">Farm Information</span>
+    </div>
+    <div class="step-connector"></div>
+    <div class="step">
+      <div class="step-num inactive" id="sn2">2</div>
+      <span class="step-label" id="sl2">Your Vendor Package</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     STEP 1 — FORM
+══════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-form">
+  <div class="form-page">
+    <div class="form-wrap">
+
+      <div class="form-intro">
+        <h1>Welcome to Harvest Table 🌱</h1>
+        <p>Tell us about your farm. This takes about 2 minutes — we'll use your answers to set up your vendor profile and prepare your onboarding package.</p>
+      </div>
+
+      <!-- API Key -->
+      <div class="api-row">
+        <label class="fl">API Key</label>
+        <div class="input-wrap">
+          <input type="password" id="api-key" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+          <button class="show-key" onclick="toggleKey()" tabindex="-1">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="form-grid">
+
+        <!-- Farm Identity -->
+        <div class="form-section">
+          <div class="fs-head">
+            <span class="fs-icon">🏡</span>
+            <span class="fs-title">Farm Identity</span>
+          </div>
+          <div class="fs-body">
+            <div class="field">
+              <label class="fl" for="farm-name">Farm Name <span class="req">*</span></label>
+              <input type="text" id="farm-name" placeholder="e.g. Sunrise Hollow Farm">
+            </div>
+            <div class="field">
+              <label class="fl" for="owner-name">Owner / Primary Contact <span class="req">*</span></label>
+              <input type="text" id="owner-name" placeholder="e.g. Maria Delgado">
+            </div>
+            <div class="field">
+              <label class="fl" for="location">Location <span class="req">*</span></label>
+              <input type="text" id="location" placeholder="e.g. Sebastopol, CA">
+            </div>
+            <div class="field">
+              <label class="fl" for="email">Email Address <span class="req">*</span></label>
+              <input type="text" id="email" placeholder="e.g. maria@sunrisehollow.com">
+            </div>
+          </div>
+        </div>
+
+        <!-- Capacity & Notes -->
+        <div class="form-section">
+          <div class="fs-head">
+            <span class="fs-icon">📦</span>
+            <span class="fs-title">Supply & Notes</span>
+          </div>
+          <div class="fs-body">
+            <div class="field">
+              <label class="fl">Weekly Supply Capacity <span class="req">*</span></label>
+              <div class="cap-row">
+                <input type="number" id="capacity" placeholder="200" min="1">
+                <span class="cap-unit">lbs / week (estimate)</span>
+              </div>
+            </div>
+            <div class="field">
+              <label class="fl">Farm Website or Social</label>
+              <input type="text" id="website" placeholder="e.g. instagram.com/sunrisehollow">
+            </div>
+            <div class="field">
+              <label class="fl">Years in Operation</label>
+              <input type="number" id="years" placeholder="e.g. 7" min="0">
+            </div>
+            <div class="field">
+              <label class="fl">Special Notes</label>
+              <textarea id="notes" style="min-height:76px;" placeholder="Anything we should know — unique growing methods, seasonal availability, delivery radius, etc."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Products -->
+        <div class="form-section">
+          <div class="fs-head">
+            <span class="fs-icon">🥕</span>
+            <span class="fs-title">Products Offered</span>
+          </div>
+          <div class="fs-body">
+            <div class="check-grid" id="products-grid">
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="products" value="Vegetables"> <span class="check-emoji">🥦</span> <span class="check-label">Vegetables</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="products" value="Fruit"> <span class="check-emoji">🍓</span> <span class="check-label">Fruit</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="products" value="Meat"> <span class="check-emoji">🥩</span> <span class="check-label">Meat</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="products" value="Dairy"> <span class="check-emoji">🧀</span> <span class="check-label">Dairy</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="products" value="Eggs"> <span class="check-emoji">🥚</span> <span class="check-label">Eggs</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="products" value="Honey"> <span class="check-emoji">🍯</span> <span class="check-label">Honey</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="products" value="Prepared Foods"> <span class="check-emoji">🫙</span> <span class="check-label">Prepared Foods</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="products" value="Herbs"> <span class="check-emoji">🌿</span> <span class="check-label">Herbs & Flowers</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Certifications -->
+        <div class="form-section">
+          <div class="fs-head">
+            <span class="fs-icon">🏅</span>
+            <span class="fs-title">Certifications</span>
+          </div>
+          <div class="fs-body">
+            <div class="check-grid" id="certs-grid">
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="certs" value="USDA Organic"> <span class="check-emoji">🌾</span> <span class="check-label">USDA Organic</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="certs" value="Regenerative"> <span class="check-emoji">♻️</span> <span class="check-label">Regenerative</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="certs" value="GAP Certified"> <span class="check-emoji">✅</span> <span class="check-label">GAP Certified</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="certs" value="Naturally Grown"> <span class="check-emoji">🌱</span> <span class="check-label">Naturally Grown</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="certs" value="Animal Welfare"> <span class="check-emoji">🐄</span> <span class="check-label">Animal Welfare</span>
+              </label>
+              <label class="check-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="certs" value="None yet"> <span class="check-emoji">📋</span> <span class="check-label">None yet</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /form-grid -->
+
+      <div id="form-error"></div>
+
+      <div class="submit-row">
+        <button class="btn-submit" id="submit-btn" onclick="submitForm()">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Generate Onboarding Package
+        </button>
+        <p class="submit-note">Claude will draft your welcome email,<br>vendor profile, and compliance checklist.</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     STEP 2 — RESULTS
+══════════════════════════════════════════════════════════ -->
+<div class="page" id="page-results">
+  <div class="results-page">
+    <div class="results-wrap">
+
+      <div class="results-top">
+        <div>
+          <h1 id="results-headline">Welcome aboard! 🎉</h1>
+          <p id="results-sub">Your onboarding package is ready below.</p>
+        </div>
+        <button class="btn-back" onclick="goBack()">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5M12 5l-7 7 7 7"/></svg>
+          Edit Form
+        </button>
+      </div>
+
+      <div id="results-error"></div>
+
+      <div class="results-grid" id="results-grid">
+        <!-- Injected by JS -->
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // ── API key ────────────────────────────────────────────
+  const keyEl = document.getElementById('api-key');
+  const saved = localStorage.getItem('anthropic_key_farm');
+  if (saved) keyEl.value = saved;
+  keyEl.addEventListener('input', () => localStorage.setItem('anthropic_key_farm', keyEl.value.trim()));
+
+  function toggleKey() {
+    keyEl.type = keyEl.type === 'password' ? 'text' : 'password';
+  }
+
+  // ── Checkbox toggle ────────────────────────────────────
+  function toggleCheck(label) {
+    const cb = label.querySelector('input[type="checkbox"]');
+    // Let the browser handle the check state change first
+    setTimeout(() => {
+      label.classList.toggle('checked', cb.checked);
+    }, 0);
+  }
+
+  // ── Step nav ───────────────────────────────────────────
+  function goStep(n) {
+    document.getElementById('page-form').classList.toggle('active', n === 1);
+    document.getElementById('page-results').classList.toggle('active', n === 2);
+    ['sn1','sn2'].forEach((id, i) => {
+      const el = document.getElementById(id);
+      el.className = 'step-num ' + (i + 1 < n ? 'done' : i + 1 === n ? 'active' : 'inactive');
+    });
+    ['sl1','sl2'].forEach((id, i) => {
+      document.getElementById(id).className = 'step-label' + (i + 1 === n ? ' active' : '');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function goBack() { goStep(1); }
+
+  // ── Collect form ───────────────────────────────────────
+  function getFormData() {
+    const products = [...document.querySelectorAll('input[name="products"]:checked')].map(c => c.value);
+    const certs    = [...document.querySelectorAll('input[name="certs"]:checked')].map(c => c.value);
+    return {
+      farmName:  document.getElementById('farm-name').value.trim(),
+      ownerName: document.getElementById('owner-name').value.trim(),
+      location:  document.getElementById('location').value.trim(),
+      email:     document.getElementById('email').value.trim(),
+      capacity:  document.getElementById('capacity').value.trim(),
+      website:   document.getElementById('website').value.trim(),
+      years:     document.getElementById('years').value.trim(),
+      notes:     document.getElementById('notes').value.trim(),
+      products, certs,
+    };
+  }
+
+  // ── Validate ───────────────────────────────────────────
+  function validate(d) {
+    if (!keyEl.value.trim()) return 'Please enter your Anthropic API key.';
+    if (!d.farmName)  return 'Farm Name is required.';
+    if (!d.ownerName) return 'Owner Name is required.';
+    if (!d.location)  return 'Location is required.';
+    if (!d.email)     return 'Email is required.';
+    if (!d.capacity)  return 'Weekly Supply Capacity is required.';
+    if (!d.products.length) return 'Please select at least one product type.';
+    return null;
+  }
+
+  // ── Submit ─────────────────────────────────────────────
+  async function submitForm() {
+    const d   = getFormData();
+    const err = validate(d);
+    const errEl = document.getElementById('form-error');
+
+    if (err) {
+      errEl.innerHTML = `<div class="error-banner" style="margin-top:20px;"><span>⚠️</span><div class="err-msg">${escHtml(err)}</div></div>`;
+      return;
+    }
+    errEl.innerHTML = '';
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.innerHTML = `<div class="spinner"></div> Claude is building your package…`;
+
+    try {
+      const result = await callClaude(d);
+      renderResults(d, result);
+      goStep(2);
+    } catch (e) {
+      errEl.innerHTML = `<div class="error-banner" style="margin-top:20px;"><span>⚠️</span><div class="err-msg"><strong>Error:</strong> ${escHtml(e.message)}</div></div>`;
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Generate Onboarding Package`;
+    }
+  }
+
+  // ── Claude API call ────────────────────────────────────
+  async function callClaude(d) {
+    const productList = d.products.join(', ') || 'Not specified';
+    const certList    = d.certs.join(', ') || 'None listed';
+    const websiteStr  = d.website ? `Website/Social: ${d.website}` : '';
+    const yearsStr    = d.years   ? `Years in operation: ${d.years}` : '';
+    const notesStr    = d.notes   ? `Special notes from farmer: ${d.notes}` : '';
+
+    const userMsg = `
+Farm Name: ${d.farmName}
+Owner Name: ${d.ownerName}
+Email: ${d.email}
+Location: ${d.location}
+Products Offered: ${productList}
+Certifications: ${certList}
+Weekly Supply Capacity: ${d.capacity} lbs
+${websiteStr}
+${yearsStr}
+${notesStr}
+    `.trim();
+
+    const system = `You are an onboarding specialist for Harvest Table Marketplace, a farm-to-table marketplace that connects local farms with restaurants, grocery co-ops, and conscious consumers.
+
+A new vendor has just submitted their registration. Based on their farm profile, generate a JSON object with exactly three keys:
+
+"welcome_email"
+  An object with:
+    "subject": a warm, specific subject line for the welcome email
+    "body": a complete email body addressed to the farmer by their first name. Write it in a warm, professional tone that reflects the values of a farm-to-table marketplace. Mention their specific farm, products, and certifications (if any). Include: a genuine welcome, a brief description of what to expect next (profile review, first delivery coordination, marketplace listing), and a sign-off from "The Harvest Table Team". Keep it 200-280 words.
+
+"vendor_profile"
+  An object with:
+    "tagline": a single evocative sentence (max 18 words) that captures what makes this farm special — based on their products, location, and certifications
+    "highlights": an array of 4-6 short strings, each a key selling point or distinguishing feature of this vendor (e.g. "USDA Organic certified since 2018", "Seasonal vegetables from Sonoma County", "250 lb weekly capacity")
+    "capacity_note": a one-sentence description of their supply capacity in context
+
+"compliance_checklist"
+  An array of objects. Each object has:
+    "section": a category name (e.g. "General Marketplace Requirements", "Meat & Poultry", "Dairy Products", "Eggs", "Prepared & Value-Added Foods", "Organic Certification")
+    "items": an array of specific, actionable compliance tasks relevant to THIS vendor based on their products and certifications
+  Only include sections relevant to the specific products this vendor offers. Always include a "General Marketplace Requirements" section. Be specific — reference actual regulatory requirements (USDA, FDA, state cottage food laws, etc.) where applicable. Typically 3-6 items per section.
+
+Return ONLY valid JSON. No markdown, no explanation.`;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type':     'application/json',
+        'x-api-key':        keyEl.value.trim(),
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model:      'claude-opus-4-6',
+        max_tokens: 3000,
+        system,
+        messages:   [{ role: 'user', content: userMsg }],
+      }),
+    });
+
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e?.error?.message || `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    const raw  = data?.content?.[0]?.text ?? '';
+    const clean = raw.replace(/^```(?:json)?\s*/i,'').replace(/\s*```\s*$/i,'').trim();
+    try {
+      return JSON.parse(clean);
+    } catch(_) {
+      throw new Error('Could not parse Claude response. Raw:\n' + raw);
+    }
+  }
+
+  // ── Render results ─────────────────────────────────────
+  function renderResults(d, r) {
+    const firstName = d.ownerName.split(' ')[0];
+    document.getElementById('results-headline').textContent = `Welcome aboard, ${firstName}! 🎉`;
+    document.getElementById('results-sub').textContent = `Onboarding package ready for ${d.farmName}.`;
+
+    const grid = document.getElementById('results-grid');
+    grid.innerHTML = '';
+
+    const email = r.welcome_email || {};
+    const prof  = r.vendor_profile || {};
+    const chk   = r.compliance_checklist || [];
+
+    // ── 1. Email card ──────────────────────────────────
+    const emailCard = document.createElement('div');
+    emailCard.className = 'res-card wide';
+    emailCard.style.animationDelay = '0ms';
+    emailCard.innerHTML = `
+      <div class="rc-head">
+        <div class="rc-head-left">
+          <div class="rc-icon" style="background:#edf5ee;">✉️</div>
+          <span class="rc-title">Welcome Email Draft</span>
+        </div>
+        <button class="btn-copy green" onclick="copyText(this, ${JSON.stringify((email.subject||'') + '\n\n' + (email.body||''))})">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Email
+        </button>
+      </div>
+      <div class="email-shell">
+        <div class="email-row"><span class="email-field">From:</span><span class="email-val">onboarding@harvesttable.com</span></div>
+        <div class="email-row"><span class="email-field">To:</span><span class="email-val">${escHtml(d.ownerName)} &lt;${escHtml(d.email)}&gt;</span></div>
+        <div class="email-row"><span class="email-field">Subject:</span><span class="email-val email-subject">${escHtml(email.subject || '')}</span></div>
+      </div>
+      <div class="email-body">${escHtml(email.body || '')}</div>
+    `;
+    grid.appendChild(emailCard);
+
+    // ── 2. Profile card ────────────────────────────────
+    const highlights = prof.highlights || [];
+    const certBadges = d.certs.filter(c => c !== 'None yet').map(c =>
+      `<span class="pbadge cert">${escHtml(c)}</span>`).join('');
+    const prodBadges = d.products.map(p =>
+      `<span class="pbadge product">${escHtml(p)}</span>`).join('');
+    const noCert = !d.certs.filter(c=>c!=='None yet').length
+      ? `<span class="pbadge none">No current certifications</span>` : '';
+
+    const profileCopyText = [
+      d.farmName, d.ownerName, d.location,
+      `Products: ${d.products.join(', ')}`,
+      `Certs: ${d.certs.join(', ')}`,
+      `Capacity: ${d.capacity} lbs/week`,
+      prof.tagline || '',
+      ...(highlights.map(h => '• ' + h)),
+    ].join('\n');
+
+    const profileCard = document.createElement('div');
+    profileCard.className = 'res-card';
+    profileCard.style.animationDelay = '80ms';
+    profileCard.innerHTML = `
+      <div class="rc-head">
+        <div class="rc-head-left">
+          <div class="rc-icon" style="background:#fdf0de;">🧑‍🌾</div>
+          <span class="rc-title">Vendor Profile Card</span>
+        </div>
+        <button class="btn-copy amber" onclick="copyText(this, ${JSON.stringify(profileCopyText)})">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy Profile
+        </button>
+      </div>
+      <div class="profile-inner">
+        <div class="profile-hero">
+          <div class="profile-farm">${escHtml(d.farmName)}</div>
+          <div class="profile-owner">${escHtml(d.ownerName)}</div>
+          <div class="profile-location">📍 ${escHtml(d.location)}</div>
+        </div>
+        <div class="profile-badges">
+          ${prodBadges}${certBadges}${noCert}
+        </div>
+        <div class="profile-details">
+          <div class="profile-row"><span class="pr-key">Capacity</span><span class="pr-val">${escHtml(d.capacity)} lbs / week</span></div>
+          ${d.years ? `<div class="profile-row"><span class="pr-key">Established</span><span class="pr-val">${escHtml(d.years)} year${d.years === '1' ? '' : 's'} in operation</span></div>` : ''}
+          ${d.website ? `<div class="profile-row"><span class="pr-key">Online</span><span class="pr-val">${escHtml(d.website)}</span></div>` : ''}
+          ${d.email ? `<div class="profile-row"><span class="pr-key">Contact</span><span class="pr-val">${escHtml(d.email)}</span></div>` : ''}
+          ${highlights.map(h => `<div class="profile-row"><span class="pr-key">✦</span><span class="pr-val">${escHtml(h)}</span></div>`).join('')}
+        </div>
+        ${prof.tagline ? `<div class="profile-tagline">"${escHtml(prof.tagline)}"</div>` : ''}
+      </div>
+    `;
+    grid.appendChild(profileCard);
+
+    // ── 3. Checklist card ──────────────────────────────
+    const totalItems = chk.reduce((sum, s) => sum + (s.items||[]).length, 0);
+    const allCheckText = chk.map(s =>
+      `${s.section}:\n${(s.items||[]).map(i => '☐ ' + i).join('\n')}`
+    ).join('\n\n');
+
+    const checklistCard = document.createElement('div');
+    checklistCard.className = 'res-card';
+    checklistCard.style.animationDelay = '160ms';
+
+    const sectionsHtml = chk.map((s, si) => {
+      const itemsHtml = (s.items || []).map((item, ii) => `
+        <div class="chk-item">
+          <div class="chk-box" id="cb-${si}-${ii}" onclick="toggleChkBox(this)"></div>
+          <span class="chk-text" id="ct-${si}-${ii}">${escHtml(item)}</span>
+        </div>
+      `).join('');
+      return `
+        <div class="chk-section">
+          <div class="chk-title">${escHtml(s.section)}</div>
+          <div class="chk-list">${itemsHtml}</div>
+        </div>
+      `;
+    }).join('');
+
+    checklistCard.innerHTML = `
+      <div class="rc-head">
+        <div class="rc-head-left">
+          <div class="rc-icon" style="background:#fdeee8;">📋</div>
+          <span class="rc-title">Compliance Checklist</span>
+        </div>
+        <button class="btn-copy rust" onclick="copyText(this, ${JSON.stringify(allCheckText)})">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copy List
+        </button>
+      </div>
+      <div style="padding:14px 20px 0;">
+        <div class="chk-progress" id="chk-progress">
+          <div class="chk-bar-wrap"><div class="chk-bar" id="chk-bar"></div></div>
+          <span class="chk-pct" id="chk-pct">0 / ${totalItems} complete</span>
+        </div>
+      </div>
+      <div class="checklist-body">${sectionsHtml}</div>
+    `;
+    grid.appendChild(checklistCard);
+
+    // Store total for progress tracking
+    checklistCard._total = totalItems;
+    window._chkTotal = totalItems;
+  }
+
+  // ── Checklist interaction ──────────────────────────────
+  function toggleChkBox(box) {
+    const isDone = box.classList.toggle('done');
+    const [, si, ii] = box.id.split('-');
+    const textEl = document.getElementById(`ct-${si}-${ii}`);
+    textEl.classList.toggle('done-text', isDone);
+    updateProgress();
+  }
+
+  function updateProgress() {
+    const done  = document.querySelectorAll('.chk-box.done').length;
+    const total = window._chkTotal || 0;
+    const pct   = total ? Math.round((done / total) * 100) : 0;
+    const bar   = document.getElementById('chk-bar');
+    const label = document.getElementById('chk-pct');
+    if (bar)   bar.style.width = pct + '%';
+    if (label) label.textContent = `${done} / ${total} complete`;
+  }
+
+  // ── Copy helper ────────────────────────────────────────
+  function copyText(btn, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Copied!`;
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  // ── Util ───────────────────────────────────────────────
+  function escHtml(s = '') {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
+</body>
+</html>

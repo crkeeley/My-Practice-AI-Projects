@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maison Celeste — Menu</title>
+
+  <!--
+  ═══════════════════════════════════════════════════════════════
+   HOW TO EDIT THE MENU
+  ═══════════════════════════════════════════════════════════════
+   All menu items live in the MENU_DATA array below (in the
+   <script> tag just after this comment).
+
+   Each item has these fields:
+     section  — must be one of: "Starters", "Mains", "Desserts", "Drinks"
+     name     — the dish name (shown in bold)
+     desc     — a short description shown beneath the name
+     price    — shown on the right, e.g. "12" (euros added automatically)
+     badge    — optional label shown as a small tag, e.g. "Vegan", "Chef's Pick"
+                leave as "" to show no badge
+
+   To ADD an item: copy an existing object and paste it with new values.
+   To REMOVE an item: delete the entire { ... } block (and its trailing comma).
+   To CHANGE a price: edit the number inside the quotes.
+  ═══════════════════════════════════════════════════════════════
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@300;400;700&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream:   #faf6ef;
+      --parchment: #f2ead8;
+      --gold:    #b8860b;
+      --gold-lt: #d4a843;
+      --brown:   #4a2e1a;
+      --rust:    #8b3a1a;
+      --text:    #2e1e0f;
+      --muted:   #7a6650;
+      --divider: #d9ccb5;
+      --badge-bg:#fff4e0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--text);
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--brown);
+      color: var(--cream);
+      text-align: center;
+      padding: 2.5rem 1.5rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before,
+    header::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 1px;
+      background: var(--gold-lt);
+      opacity: .6;
+    }
+    header::before { top: 1.2rem; }
+    header::after  { bottom: 1.2rem; }
+
+    .header-eyebrow {
+      font-family: 'Lato', sans-serif;
+      font-weight: 300;
+      font-size: .7rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      color: var(--gold-lt);
+      margin-bottom: .6rem;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.4rem;
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: .02em;
+    }
+    header h1 em {
+      font-style: italic;
+      color: var(--gold-lt);
+    }
+    .header-tagline {
+      margin-top: .65rem;
+      font-size: .78rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: #c9b99a;
+    }
+
+    /* ── Sticky section nav ── */
+    nav.section-nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--parchment);
+      border-bottom: 1px solid var(--divider);
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    nav.section-nav::-webkit-scrollbar { display: none; }
+
+    nav.section-nav a {
+      flex-shrink: 0;
+      padding: .75rem 1.1rem;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      text-decoration: none;
+      color: var(--muted);
+      border-bottom: 2px solid transparent;
+      transition: color .2s, border-color .2s;
+    }
+    nav.section-nav a:hover,
+    nav.section-nav a.active {
+      color: var(--rust);
+      border-bottom-color: var(--rust);
+    }
+
+    /* ── Main content ── */
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 0 4rem;
+    }
+
+    /* ── Section block ── */
+    .menu-section {
+      padding: 2.5rem 1.25rem 0;
+    }
+
+    .section-heading {
+      display: flex;
+      align-items: center;
+      gap: .9rem;
+      margin-bottom: 1.4rem;
+    }
+    .section-heading::before,
+    .section-heading::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--divider);
+    }
+    .section-heading h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--brown);
+      white-space: nowrap;
+      letter-spacing: .02em;
+    }
+    .section-icon {
+      font-size: 1.1rem;
+      margin-right: -.3rem;
+    }
+
+    /* ── Menu item ── */
+    .menu-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--divider);
+    }
+    .menu-item:last-child { border-bottom: none; }
+
+    .item-body { flex: 1; min-width: 0; }
+
+    .item-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: .25rem;
+      line-height: 1.3;
+    }
+    .item-desc {
+      font-size: .82rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .item-badge {
+      display: inline-block;
+      margin-top: .45rem;
+      padding: .18rem .55rem;
+      border-radius: 20px;
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      background: var(--badge-bg);
+      color: var(--rust);
+      border: 1px solid #e8d09a;
+    }
+
+    .item-price {
+      flex-shrink: 0;
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      color: var(--gold);
+      font-weight: 400;
+      padding-top: .05rem;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 2.5rem 1.5rem 3rem;
+      font-size: .72rem;
+      color: var(--muted);
+      letter-spacing: .06em;
+      border-top: 1px solid var(--divider);
+      margin-top: 2rem;
+    }
+    footer strong {
+      font-weight: 700;
+      color: var(--brown);
+      display: block;
+      font-size: .8rem;
+      margin-bottom: .3rem;
+    }
+
+    /* ── Responsive tweaks ── */
+    @media (max-width: 380px) {
+      header h1 { font-size: 2rem; }
+      nav.section-nav a { padding: .7rem .85rem; font-size: .68rem; }
+    }
+  </style>
+</head>
+<body>
+
+<script>
+// ═══════════════════════════════════════════════════
+//  MENU DATA — Edit this to update the menu
+// ═══════════════════════════════════════════════════
+const MENU_DATA = [
+
+  // ── Starters ──────────────────────────────────────
+  {
+    section: "Starters",
+    name: "Soupe à l'Oignon",
+    desc: "Classic French onion soup, slow-caramelised onions in rich beef broth, topped with a gruyère crouton",
+    price: "11",
+    badge: "Chef's Pick"
+  },
+  {
+    section: "Starters",
+    name: "Pâté de Campagne",
+    desc: "Rustic country-style pork and herb terrine, served with cornichons, Dijon mustard, and toasted sourdough",
+    price: "13",
+    badge: ""
+  },
+  {
+    section: "Starters",
+    name: "Salade Niçoise",
+    desc: "Tuna, haricots verts, soft-boiled egg, Niçoise olives, cherry tomatoes, and anchovy vinaigrette",
+    price: "14",
+    badge: ""
+  },
+  {
+    section: "Starters",
+    name: "Escargots de Bourgogne",
+    desc: "Six Burgundy snails baked in garlic-parsley butter, served with crusty baguette",
+    price: "15",
+    badge: ""
+  },
+  {
+    section: "Starters",
+    name: "Velouté de Butternut",
+    desc: "Velvety butternut squash soup with a drizzle of crème fraîche and toasted pumpkin seeds",
+    price: "10",
+    badge: "Vegan"
+  },
+
+  // ── Mains ─────────────────────────────────────────
+  {
+    section: "Mains",
+    name: "Bœuf Bourguignon",
+    desc: "Slow-braised Burgundy beef with pearl onions, lardons, mushrooms, and thyme, served with pomme purée",
+    price: "28",
+    badge: "Chef's Pick"
+  },
+  {
+    section: "Mains",
+    name: "Poulet Rôti à l'Estragon",
+    desc: "Free-range roast chicken with tarragon cream sauce, roasted garlic, and seasonal vegetables",
+    price: "24",
+    badge: ""
+  },
+  {
+    section: "Mains",
+    name: "Sole Meunière",
+    desc: "Pan-fried Dover sole in brown butter, lemon, and capers, served with steamed new potatoes and haricots verts",
+    price: "32",
+    badge: ""
+  },
+  {
+    section: "Mains",
+    name: "Croque Madame",
+    desc: "Toasted brioche with béchamel, smoked ham, and melted Comté, crowned with a fried egg and a green salad",
+    price: "17",
+    badge: ""
+  },
+  {
+    section: "Mains",
+    name: "Tarte Provençale",
+    desc: "Open tart of roasted courgette, aubergine, cherry tomatoes, Herbes de Provence, and goat's cheese",
+    price: "19",
+    badge: "Vegetarian"
+  },
+  {
+    section: "Mains",
+    name: "Magret de Canard",
+    desc: "Duck breast with blackcurrant jus, sautéed potatoes, and wilted watercress",
+    price: "30",
+    badge: ""
+  },
+
+  // ── Desserts ──────────────────────────────────────
+  {
+    section: "Desserts",
+    name: "Crème Brûlée",
+    desc: "Vanilla custard with a perfectly caramelised sugar crust — the house classic",
+    price: "9",
+    badge: "House Classic"
+  },
+  {
+    section: "Desserts",
+    name: "Tarte Tatin",
+    desc: "Upside-down caramelised apple tart, warm from the oven, served with crème fraîche",
+    price: "10",
+    badge: ""
+  },
+  {
+    section: "Desserts",
+    name: "Mousse au Chocolat",
+    desc: "Dark 70% Valrhona chocolate mousse, light as air, with a pinch of fleur de sel",
+    price: "9",
+    badge: ""
+  },
+  {
+    section: "Desserts",
+    name: "Île Flottante",
+    desc: "Poached meringue floating on crème anglaise, drizzled with caramel and toasted almonds",
+    price: "8",
+    badge: ""
+  },
+  {
+    section: "Desserts",
+    name: "Fromage du Jour",
+    desc: "Selection of three French cheeses with walnut bread, honey, and seasonal fruit",
+    price: "13",
+    badge: ""
+  },
+
+  // ── Drinks ────────────────────────────────────────
+  {
+    section: "Drinks",
+    name: "Kir Royale",
+    desc: "Champagne with a touch of blackcurrant crème de cassis",
+    price: "12",
+    badge: ""
+  },
+  {
+    section: "Drinks",
+    name: "Pastis",
+    desc: "Anise-flavoured apéritif served with a carafe of chilled water, a true Provençal ritual",
+    price: "8",
+    badge: ""
+  },
+  {
+    section: "Drinks",
+    name: "Pichet de Vin Rouge",
+    desc: "250ml carafe of our house Côtes du Rhône — fruity, earthy, and easy-drinking",
+    price: "11",
+    badge: ""
+  },
+  {
+    section: "Drinks",
+    name: "Pichet de Vin Blanc",
+    desc: "250ml carafe of crisp Muscadet sur Lie, ideal with seafood",
+    price: "11",
+    badge: ""
+  },
+  {
+    section: "Drinks",
+    name: "Limonade Maison",
+    desc: "House-made sparkling lemonade with fresh mint and elderflower",
+    price: "5",
+    badge: "Non-Alcoholic"
+  },
+  {
+    section: "Drinks",
+    name: "Café & Mignardises",
+    desc: "Espresso or café au lait served with two petit fours of the day",
+    price: "5",
+    badge: ""
+  }
+];
+// ═══════════════════════════════════════════════════
+//  END OF MENU DATA
+// ═══════════════════════════════════════════════════
+
+// Section display config (order, icon, anchor id)
+const SECTIONS = [
+  { name: "Starters",  icon: "🌿", id: "starters"  },
+  { name: "Mains",     icon: "🍽️", id: "mains"     },
+  { name: "Desserts",  icon: "🍮", id: "desserts"   },
+  { name: "Drinks",    icon: "🥂", id: "drinks"     },
+];
+
+document.addEventListener("DOMContentLoaded", () => {
+  const main = document.querySelector("main");
+  const nav  = document.querySelector("nav.section-nav");
+
+  // Build nav links
+  SECTIONS.forEach(sec => {
+    const a = document.createElement("a");
+    a.href = `#${sec.id}`;
+    a.textContent = sec.name;
+    a.dataset.section = sec.id;
+    nav.appendChild(a);
+  });
+
+  // Build sections
+  SECTIONS.forEach(sec => {
+    const items = MENU_DATA.filter(i => i.section === sec.name);
+    if (!items.length) return;
+
+    const section = document.createElement("section");
+    section.className = "menu-section";
+    section.id = sec.id;
+
+    const heading = document.createElement("div");
+    heading.className = "section-heading";
+    heading.innerHTML = `<h2><span class="section-icon">${sec.icon}</span> ${sec.name}</h2>`;
+    section.appendChild(heading);
+
+    items.forEach(item => {
+      const el = document.createElement("article");
+      el.className = "menu-item";
+      el.innerHTML = `
+        <div class="item-body">
+          <div class="item-name">${item.name}</div>
+          <div class="item-desc">${item.desc}</div>
+          ${item.badge ? `<span class="item-badge">${item.badge}</span>` : ""}
+        </div>
+        <div class="item-price">$${item.price}</div>
+      `;
+      section.appendChild(el);
+    });
+
+    main.appendChild(section);
+  });
+
+  // Active nav highlight on scroll
+  const sectionEls = SECTIONS.map(s => document.getElementById(s.id)).filter(Boolean);
+  const navLinks   = [...nav.querySelectorAll("a")];
+
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(a => a.classList.remove("active"));
+          const active = nav.querySelector(`a[data-section="${entry.target.id}"]`);
+          if (active) {
+            active.classList.add("active");
+            active.scrollIntoView({ inline: "center", behavior: "smooth" });
+          }
+        }
+      });
+    },
+    { rootMargin: "-30% 0px -60% 0px" }
+  );
+
+  sectionEls.forEach(el => observer.observe(el));
+});
+</script>
+
+<header>
+  <p class="header-eyebrow">Est. 2009 · Paris, France</p>
+  <h1>Maison <em>Celeste</em></h1>
+  <p class="header-tagline">Menu du Jour</p>
+</header>
+
+<nav class="section-nav" aria-label="Menu sections"></nav>
+
+<main></main>
+
+<footer>
+  <strong>Maison Celeste</strong>
+  All prices include VAT. Please inform your server of any allergies.<br />
+  A discretionary 12.5% service charge will be added to your bill.
+</footer>
+
+</body>
+</html>
